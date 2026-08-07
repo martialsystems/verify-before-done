@@ -1,21 +1,21 @@
 ---
-description: Verify all interaction paths before claiming done
+description: Check all interaction paths before reporting work finished
 alwaysApply: true
 ---
 
 # Verify before done
 
-Copyright (c) 2026 Martial Systems LLC. MIT.
-Full law: https://github.com/martialsystems/verify-before-done
+Copyright (c) 2026 Martial Systems LLC. MIT.  
+https://github.com/martialsystems/verify-before-done
 
-Do not say fixed/done/shipped/try it until you have:
+Do not report fixed, done, shipped, or ready to try until:
 
-1. Mapped every interaction path for the change  
-2. Checked all of them (tests, search, scripts, or written audit)  
-3. Re-checked the full map after any patch  
-4. Ended with the report block below  
+1. Every interaction path for the change is listed  
+2. Each path is checked (tests, search, scripts, or written audit)  
+3. The full list is rechecked after any fix  
+4. The report section below is filled in  
 
-Forbidden: happy-path-only verify; fake verification.
+Do not check only the path just edited. Do not invent verification.
 
 ```text
 ## Verify-before-done report
@@ -26,4 +26,4 @@ Forbidden: happy-path-only verify; fake verification.
 - Residual risks:
 ```
 
-Multi-publisher / deploy: never overwrite fresher with staler; git green ≠ live.
+Deploys: do not overwrite newer artifacts with older ones; green CI does not prove the live surface is current.

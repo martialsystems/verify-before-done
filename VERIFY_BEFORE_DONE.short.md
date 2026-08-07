@@ -1,18 +1,18 @@
-# VERIFY BEFORE DONE (short)
+# Verify before done (short)
 
 **Copyright (c) 2026 Martial Systems LLC.** MIT.
 
-**Do not say fixed/done/try it until this finishes.**
+Do not report fixed, done, or ready to try until:
 
-1. Implement  
-2. **Map every interaction path** (entry points, modes, on/off, fallbacks, caches, mirrors, deploys, side effects)  
-3. **Check all of them** (tests, search, scripts, or written audit)  
-4. Fail → patch → re-check **full** map  
-5. Report only then  
+1. The change is implemented.  
+2. Every interaction path is listed (entry points, modes, on/off, fallbacks, caches, mirrors, deploys, side effects).  
+3. Each path is checked (tests, search, scripts, or written audit).  
+4. Failures are fixed and the full list is rechecked.  
+5. The report section below is filled in.
 
-**Forbidden:** happy-path-only verify; “probably fine”; fake verification.
+Do not check only the path you just edited. Do not invent checks that were not run.
 
-**Every final answer after a change MUST end with:**
+After any change, end with:
 
 ```text
 ## Verify-before-done report
@@ -23,8 +23,8 @@
 - Residual risks:
 ```
 
-If a secondary path still shows old behavior, you are **not done**.  
-Multi-surface: never overwrite fresher with staler; git/CI green does not mean the live site is current.
+If another path still shows the old behavior, the work is not finished.  
+For deploys: do not overwrite newer artifacts with older ones; green CI does not prove the public surface is current.
 
 ---
 

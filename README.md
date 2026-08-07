@@ -1,8 +1,8 @@
 # Verify Before Done
 
-**A one-file rule that stops AI coding agents from saying “fixed” after only the happy path.**
+Instructions for coding assistants: check every path that can touch a change before reporting that the work is finished.
 
-Copyright (c) 2026 **Martial Systems LLC**. MIT licensed — see [LICENSE](./LICENSE).
+Copyright (c) 2026 Martial Systems LLC. MIT license — see [LICENSE](./LICENSE).
 
 <p align="right">
   <a href="https://ko-fi.com/martialgames"><img src="https://img.shields.io/badge/Donate-Ko--fi-ff5e5b?style=flat-square&logo=ko-fi&logoColor=white" alt="Donate on Ko-fi" /></a>
@@ -12,48 +12,47 @@ Copyright (c) 2026 **Martial Systems LLC**. MIT licensed — see [LICENSE](./LIC
 
 ---
 
-## The problem
+## Purpose
 
-Coding agents often:
+Assistants often change one code path, confirm that path works, and report success while another entry point, deploy step, cache, or mirrored file still behaves the old way.
 
-1. Change one path  
-2. See that path work  
-3. Say **done**  
+This repository is a short set of rules you attach to a project or chat so the assistant:
 
-…while another button, deploy script, file mirror, or cache still shows the **old** behavior.
+1. Lists every path that can hit the change  
+2. Checks each of them  
+3. Fixes gaps and rechecks  
+4. Reports only after that  
 
-This pack is a short, portable **operating law** you attach to Claude, Cursor, Codex, ChatGPT, Gemini, Grok, or any other agent: **map every interaction, check all of them, then report.**
-
-No install. No GraphForge. No SDK. Copy a markdown file.
-
----
-
-## 60-second install
-
-| You use | What to do |
-|---------|------------|
-| **Any chat** | Paste [PASTE_BLOCK.txt](./PASTE_BLOCK.txt) at the start of the session |
-| **Short custom instructions** | Copy [VERIFY_BEFORE_DONE.short.md](./VERIFY_BEFORE_DONE.short.md) |
-| **Full project rule** | Copy [VERIFY_BEFORE_DONE.md](./VERIFY_BEFORE_DONE.md) into project instructions / `AGENTS.md` / `CLAUDE.md` |
-| **Cursor** | Copy [.cursor-rules-example.mdc](./.cursor-rules-example.mdc) → `.cursor/rules/verify-before-done.mdc` |
-| **Claude Code / skills** | Copy [SKILL.md](./SKILL.md) into a skills folder as `verify-before-done/SKILL.md` |
-| **Repo default** | Copy [AGENTS.md.drop-in](./AGENTS.md.drop-in) → `AGENTS.md` at repo root |
-
-Then say once:
-
-> Follow Verify Before Done. Do not claim done without the report block.
+There is nothing to install. Copy a markdown file into your tools.
 
 ---
 
-## What the agent must do
+## Quick start
+
+| Tooling | File to use |
+|---------|-------------|
+| Blank chat | [PASTE_BLOCK.txt](./PASTE_BLOCK.txt) |
+| Limited instruction space | [VERIFY_BEFORE_DONE.short.md](./VERIFY_BEFORE_DONE.short.md) |
+| Full project rules | [VERIFY_BEFORE_DONE.md](./VERIFY_BEFORE_DONE.md) |
+| Cursor project rules | [.cursor-rules-example.mdc](./.cursor-rules-example.mdc) → `.cursor/rules/verify-before-done.mdc` |
+| Skills-compatible tools | [SKILL.md](./SKILL.md) |
+| Repo-level agent file | [AGENTS.md.drop-in](./AGENTS.md.drop-in) → `AGENTS.md` |
+
+Session line (optional):
+
+> Follow Verify Before Done. Do not report finished work without the report section.
+
+---
+
+## Required process
 
 ```text
-implement → map all paths → check all paths → patch if needed → re-check full map → report
+implement → list interaction paths → check each path → fix failures → recheck all paths → report
 ```
 
-**Forbidden:** “fixed / done / try it” after only the path they just edited.
+Do not report “fixed”, “done”, or “try it” after checking only the path you just edited.
 
-**Required closing block:**
+Every completion report must include:
 
 ```text
 ## Verify-before-done report
@@ -66,76 +65,54 @@ implement → map all paths → check all paths → patch if needed → re-check
 
 ---
 
-## Files in this repo
+## Repository layout
 
-| File | Purpose |
-|------|---------|
-| [VERIFY_BEFORE_DONE.md](./VERIFY_BEFORE_DONE.md) | Full law (upload this for serious use) |
-| [VERIFY_BEFORE_DONE.short.md](./VERIFY_BEFORE_DONE.short.md) | Condensed (~token budget friendly) |
-| [PASTE_BLOCK.txt](./PASTE_BLOCK.txt) | One paste into a blank chat |
-| [SKILL.md](./SKILL.md) | Skill frontmatter for skill-capable tools |
-| [AGENTS.md.drop-in](./AGENTS.md.drop-in) | Drop-in `AGENTS.md` fragment |
-| [.cursor-rules-example.mdc](./.cursor-rules-example.mdc) | Cursor always-on rule example |
+| File | Role |
+|------|------|
+| [VERIFY_BEFORE_DONE.md](./VERIFY_BEFORE_DONE.md) | Full rule set |
+| [VERIFY_BEFORE_DONE.short.md](./VERIFY_BEFORE_DONE.short.md) | Condensed rule set |
+| [PASTE_BLOCK.txt](./PASTE_BLOCK.txt) | Single paste for a new chat |
+| [SKILL.md](./SKILL.md) | Skill-format entry |
+| [AGENTS.md.drop-in](./AGENTS.md.drop-in) | Drop-in for `AGENTS.md` |
+| [.cursor-rules-example.mdc](./.cursor-rules-example.mdc) | Cursor rule example |
 
----
+### Claude
 
-## Product tips (by tool)
+Project instructions or custom instructions: short or full markdown.  
+Skills: place `SKILL.md` under a `verify-before-done` skills directory.
 
-<details>
-<summary><b>Claude</b> (Projects / Code / custom instructions)</summary>
+### Cursor
 
-- Project knowledge or custom instructions: short or full `.md`
-- Claude Code: `~/.claude/skills/verify-before-done/SKILL.md` (or project skills path)
+Project Rules with `alwaysApply: true`, or user rules with the short file.
 
-</details>
+### ChatGPT / Codex / similar
 
-<details>
-<summary><b>Cursor</b></summary>
-
-- Project Rules with `alwaysApply: true` (see the `.mdc` example)
-- Or User Rules → paste the short version
-
-</details>
-
-<details>
-<summary><b>ChatGPT / Codex</b></summary>
-
-- Custom instructions or project system prompt: short version  
-- Workspace: put full law in `AGENTS.md`
-
-</details>
-
-<details>
-<summary><b>Grok Build</b></summary>
-
-- Skill: `SKILL.md` under user skills  
-- Or attach the full markdown as a rule file
-
-</details>
+Custom instructions: short file.  
+Workspace: full file or `AGENTS.md`.
 
 ---
 
-## Why this exists
+## Background
 
-Built after real multi-agent / multi-publisher failures: green CI and a good local path while a **secondary** path still shipped old behavior. The law forces an **interaction map** and an honest residual-risk line so “probably fine” is not an acceptable finish.
+These rules were written after failures where continuous integration and a primary path looked correct while a second publisher, mirror file, or cached asset still served old results. The interaction map and residual-risk line are meant to make that class of miss explicit.
 
 ---
 
-## License & copyright
+## License
 
 | | |
 |---|---|
-| **License** | [MIT](./LICENSE) |
-| **Copyright** | © 2026 Martial Systems LLC |
-| **NOTICE** | [NOTICE](./NOTICE) |
+| License | [MIT](./LICENSE) |
+| Copyright | © 2026 Martial Systems LLC |
+| Notice | [NOTICE](./NOTICE) |
 
-You may fork, embed, and ship the text. Bring your own product name if you rebrand a fork; do not present a fork as an official Martial Systems product without permission.
+Forks and reuse of the text are allowed under MIT. Do not present a fork as an official Martial Systems product without permission.
 
 ---
 
 <p align="right">
   <sub>
-    Optional support:
+    Support (optional):
     <a href="https://ko-fi.com/martialgames">Ko-fi</a>
     ·
     <a href="https://martialgames.net/">martialgames.net</a>

@@ -1,20 +1,18 @@
-# Agent law (drop into any repo root as AGENTS.md or append)
+# Agent instructions
 
 **Copyright (c) 2026 Martial Systems LLC.** MIT.
 
-## Verify before done (mandatory)
+## Verify before done
 
-Before claiming fixed, done, shipped, or “try it”:
+Before reporting fixed, done, shipped, or ready to try:
 
 1. Implement the change.  
-2. Map every interaction path (entry points, modes, toggles, fallbacks, caches, mirrors, deploys, side effects).  
-3. Sanity-check **all** of those paths.  
-4. On failure → patch → re-check the full map.  
-5. Report with the block below.
+2. List every interaction path (entry points, modes, toggles, fallbacks, caches, mirrors, deploys, side effects).  
+3. Check each path.  
+4. On failure, fix and recheck the full list.  
+5. End with the report section below.  
 
-**Forbidden:** happy-path-only verification; unverified success claims.
-
-### Required report block
+Do not report success after checking only one path. Do not claim checks that were not run.
 
 ```text
 ## Verify-before-done report
@@ -25,10 +23,10 @@ Before claiming fixed, done, shipped, or “try it”:
 - Residual risks:
 ```
 
-Full law: https://github.com/martialsystems/verify-before-done  
-(or copy `VERIFY_BEFORE_DONE.md` into this repo)
+Full rule set: https://github.com/martialsystems/verify-before-done  
+(or keep a copy of `VERIFY_BEFORE_DONE.md` in this repository)
 
-This law wins over speed when declaring success.
+When declaring work complete, this process takes priority over speed.
 
 ---
 

@@ -1,116 +1,121 @@
-# VERIFY BEFORE DONE (mandatory agent law)
+# Verify before done
 
-**Copyright (c) 2026 Martial Systems LLC.** MIT — see [LICENSE](./LICENSE).
+**Copyright (c) 2026 Martial Systems LLC.** Released under the MIT License (see [LICENSE](./LICENSE)).
 
-You are not allowed to say **fixed**, **done**, **shipped**, **try it**, or **LGTM** until this loop finishes and you output the **Required report block** below.
-
----
-
-## Hard loop (non-negotiable)
-
-For **every** change (or batch of related edits):
-
-1. **Implement** the change.
-2. **Map interactions** — list every path that can touch the change.
-3. **Sanity-check all of those paths** (run tests, static analysis, scripts, or a written path audit when runtime is impossible).
-4. **If anything fails or is ambiguous → patch** and re-check the **full** map (not only the failing line).
-5. **Only then** report what changed, what was verified, and residual risk.
-
-### Forbidden
-
-- Announcing success after the first edit without the interaction pass.
-- Verifying only the happy path you just coded.
-- Leaving “probably fine” branches unchecked without labeling them **residual risk**.
-- Padding the report with verification you did not actually run.
+Do not report work as fixed, done, shipped, or ready to try until the process below is finished and the report section is filled in.
 
 ---
 
-## Interaction map (build a checklist for *this* change)
+## Process
 
-| Surface | Ask |
-|--------|-----|
-| **Entry points** | Every button, API, CLI flag, event, cron, deploy script that hits the new code |
-| **Parameters** | Each enum/option/mode (type, theme, platform, env) |
-| **On / off** | Feature toggles, null devices, empty state, offline, missing auth |
-| **Fallbacks** | Prefer-A-else-B, error catches that hide real behavior |
-| **Shared state** | Caches, singletons, `localStorage`, globals, CDN, shared deploy trees |
-| **Duplicates** | Folder mirrors (`foo.html` / `foo/index.html`), copied assets, dual publishers |
-| **Clients** | Mobile vs desktop, cache-busted URLs, gesture-required APIs |
-| **Side effects** | What still runs *in addition* to the new path (often the real bug) |
+For each change (or related batch of changes):
 
-If a secondary path still produces the **old** or **dominant** output, the change is **not done**.
+1. Make the change.  
+2. List every path that can reach the change (interaction map).  
+3. Check each path (tests, static review, scripts, or a written audit when a runtime check is not possible).  
+4. If a check fails or is unclear, fix it and check the full list again—not only the failing item.  
+5. Report what changed, what was checked, and any remaining risk.
 
----
+### Do not
 
-## Sanity methods (use more than one when risky)
-
-- Existing project gates / tests / linters / typecheck.
-- Targeted checks: distinct outputs per mode; no shared hard-coded default.
-- Static audit: search every call site; no leftover defaults.
-- Full stack: user action → handler → library → side channel.
-- Regression: toggle-off, empty state, previous behavior still works.
-- When you cannot see/hear UI: prove **data/control differences** offline (hashes, DOM attributes, JSON payloads, HTTP bodies).
+- Report success after a single edit without the checks above.  
+- Check only the path you just modified.  
+- Leave unchecked branches as “probably fine” without naming them as residual risk.  
+- Claim verification that was not performed.
 
 ---
 
-## Bug loop
+## Interaction map
+
+Build a short checklist for the current change.
+
+| Area | What to cover |
+|------|----------------|
+| Entry points | Buttons, APIs, CLI flags, events, schedules, deploy scripts |
+| Parameters | Modes, options, environments, platforms |
+| Disabled / empty | Feature off, missing data, offline, unauthenticated |
+| Fallbacks | Prefer-A-else-B paths; error handlers that hide behavior |
+| Shared state | Caches, globals, local storage, CDNs, shared deploy trees |
+| Duplicates | Mirrored pages (`foo.html` vs `foo/index.html`), copied assets, second publishers |
+| Clients | Mobile vs desktop, cache-busted URLs, APIs that need a user gesture |
+| Side effects | Other code that still runs in parallel with the new path |
+
+If another path still produces the previous or dominant result, the work is not finished.
+
+---
+
+## How to check
+
+Use more than one method when the change is risky:
+
+- Existing tests, linters, and type checkers  
+- Targeted checks for each mode (outputs must actually differ when they should)  
+- Search for all call sites; remove leftover hard-coded defaults  
+- Trace user action → handler → library → any extra side channel  
+- Confirm prior behavior still works when the feature is off or empty  
+- When UI cannot be observed: compare data (payloads, attributes, hashes, HTTP bodies)
+
+---
+
+## Until finished
 
 ```
-while bugs or unchecked interaction paths remain:
-  patch
-  re-check the FULL interaction checklist
-report only when checklist is green OR residual risk is explicit
+while failures or unchecked paths remain:
+  fix
+  re-run the full checklist
+report only when the checklist passes, or residual risk is stated clearly
 ```
 
 ---
 
-## Required report block (must appear before “done”)
+## Report section (required before “done”)
 
 ```text
 ## Verify-before-done report
-- What changed: …
-- Interaction map: (bullet each entry point / branch)
+- What changed:
+- Interaction map:
 - Verified: (path → method → pass/fail)
-- Bugs found in verify pass: … (or none)
-- Residual risks: … (or “none — all listed paths checked”)
+- Bugs found in verify pass:
+- Residual risks:
 ```
 
-If you cannot complete a path, say so under **Residual risks** with a concrete follow-up. Do **not** claim full success.
+If a path could not be checked, list it under residual risks with a follow-up. Do not claim full completion.
 
 ---
 
-## Worked failure patterns (do not repeat these)
+## Common mistakes
 
-| Mistake | What you missed |
-|---------|-----------------|
-| Changed a selector; all options still look/sound the same | Shared asset / shared default / shared cache |
-| Fixed `foo.html` only | Folder mirror `foo/index.html` or a deploy copy |
-| Flipped a flag path | Default still forces old behavior |
-| “Deploy ok” / CI green | Another publisher or CDN still serving old artifact |
-| Local checks red, remote green (or the reverse) | Wrong machine vs wrong surface — map **all** surfaces |
-| Happy-path test only | Stale-overwrite branch, missing-src branch, toggle-off |
+| Mistake | Often missed |
+|---------|----------------|
+| One control changed; all options still look or behave the same | Shared asset or shared default |
+| One HTML file fixed | Mirror under `…/index.html` or a deploy copy |
+| Feature flag path updated | Default still forces old behavior |
+| Deploy or CI reported success | Another publisher or cache still serving old files |
+| Local and remote disagree | Surfaces were not listed separately |
+| Only the main success path tested | Overwrite, missing-source, and “off” cases |
 
 ---
 
-## Deploy / multi-surface extras (when relevant)
+## Deploys and multiple surfaces
 
-| Branch | Pass condition |
-|--------|----------------|
-| Fresh source over stale dest | Update allowed |
-| Stale source over fresh dest | **Keep dest** — never regress |
-| Missing source | Leave dest; warn or fail if required |
-| Local vs git vs live URL | Do not assume they match; compare |
-| Product freeze / locked config (if any) | Untouched unless the user ordered a change |
+When the work touches sites, static hosts, shared JSON, or more than one publisher:
 
-Do not rewrite locked production architecture **to fix a stale website**.
+| Case | Expectation |
+|------|-------------|
+| Newer source, older destination | Update allowed |
+| Older source, newer destination | Keep destination; do not regress |
+| Source missing | Keep destination; warn or fail if the source is required |
+| Local vs git vs public URL | Compare; do not assume they match |
+| Locked production configuration | Leave unchanged unless the user ordered a change |
+
+Do not change a locked production model or architecture solely to correct a stale public page.
 
 ---
 
 ## Priority
 
-This law **wins** over “be fast” or “looks fine” at the moment you **declare success**.  
-Speed is allowed during implementation; **declaration** requires the report block.
+When reporting that work is complete, this process takes precedence over finishing quickly. Implementation may be fast; the completion claim may not skip the report.
 
 ---
 
-<p align="right"><sub>© 2026 Martial Systems LLC · Optional: <a href="https://ko-fi.com/martialgames">donate</a></sub></p>
+<p align="right"><sub>© 2026 Martial Systems LLC · <a href="https://ko-fi.com/martialgames">Ko-fi</a></sub></p>

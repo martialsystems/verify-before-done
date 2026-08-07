@@ -1,38 +1,38 @@
 ---
 name: verify-before-done
 description: >
-  Mandatory interaction-map and full-path verification before claiming fixed/done.
-  Use when finishing any code, config, UI, deploy, or bugfix — and when the user
-  says done, fixed, ship, verify, sanity, or /verify-before-done. Blocks happy-path-only
-  completion reports. Portable; no GraphForge required.
+  Require a full interaction-path check before reporting work finished.
+  Use when finishing code, config, UI, deploy, or bugfix work, or when the
+  user asks to verify, sanity-check, or mark work done. Prevents reporting
+  success after checking only one path.
 ---
 
-# Verify Before Done
+# Verify before done
 
 **Copyright (c) 2026 Martial Systems LLC.** MIT.
 
-You must obey this skill before any success claim.
+Do not report success until this process is complete.
 
-## Loop
+## Process
 
-1. Implement  
-2. Map **all** interaction paths for the change  
-3. Sanity-check **every** path (tests, static analysis, scripts, or written audit)  
-4. On fail/ambiguity → patch → re-check the **full** map  
-5. Only then report  
+1. Implement the change.  
+2. List all interaction paths.  
+3. Check each path (tests, static review, scripts, or written audit).  
+4. On failure, fix and recheck the full list.  
+5. Report with the section below.  
 
-## Interaction map (minimum)
+## Interaction map
 
-Entry points · parameters/modes · on/off · fallbacks · shared state/caches ·  
-duplicate files/mirrors · clients (mobile/desktop/CDN) · side effects that still run  
+Entry points, parameters/modes, on/off and empty states, fallbacks, shared  
+state and caches, mirrored files, client differences, and side effects.
 
-## Forbidden
+## Do not
 
-- “Fixed / done / try it” without the report block  
-- Checking only the happy path  
-- Inventing verification that was not run  
+- Report fixed or done without the report section  
+- Check only the path just edited  
+- Claim verification that was not run  
 
-## Required closing block
+## Report section
 
 ```text
 ## Verify-before-done report
@@ -43,13 +43,13 @@ duplicate files/mirrors · clients (mobile/desktop/CDN) · side effects that sti
 - Residual risks:
 ```
 
-## Deploy / multi-publisher work
+## Deploys
 
-- Never overwrite fresher artifacts with staler ones  
-- Do not assume git/CI green means the public surface is current  
+Do not overwrite newer artifacts with older ones.  
+Do not assume green CI means the public surface is current.
 
-Full law: [VERIFY_BEFORE_DONE.md](./VERIFY_BEFORE_DONE.md) in this repo.
+Full text: [VERIFY_BEFORE_DONE.md](./VERIFY_BEFORE_DONE.md).
 
 ---
 
-<sub>© 2026 Martial Systems LLC · Optional: https://ko-fi.com/martialgames</sub>
+<sub>© 2026 Martial Systems LLC · https://ko-fi.com/martialgames</sub>
