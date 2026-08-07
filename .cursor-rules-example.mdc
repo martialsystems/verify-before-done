@@ -1,0 +1,29 @@
+---
+description: Verify all interaction paths before claiming done
+alwaysApply: true
+---
+
+# Verify before done
+
+Copyright (c) 2026 Martial Systems LLC. MIT.
+Full law: https://github.com/martialsystems/verify-before-done
+
+Do not say fixed/done/shipped/try it until you have:
+
+1. Mapped every interaction path for the change  
+2. Checked all of them (tests, search, scripts, or written audit)  
+3. Re-checked the full map after any patch  
+4. Ended with the report block below  
+
+Forbidden: happy-path-only verify; fake verification.
+
+```text
+## Verify-before-done report
+- What changed:
+- Interaction map:
+- Verified: (path → method → pass/fail)
+- Bugs found in verify pass:
+- Residual risks:
+```
+
+Multi-publisher / deploy: never overwrite fresher with staler; git green ≠ live.
