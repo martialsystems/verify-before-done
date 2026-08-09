@@ -4,7 +4,9 @@ description: >
   Require a full interaction-path check before reporting work finished.
   Use when finishing code, config, UI, deploy, or bugfix work, or when the
   user asks to verify, sanity-check, or mark work done. Prevents reporting
-  success after checking only one path.
+  success after checking only one path. Also enforces quality defaults:
+  architect/PhD-level code, research-level PDFs with no AI polish, and a
+  same-rules sanity pass after creating anything.
 ---
 
 # Verify before done
@@ -12,6 +14,14 @@ description: >
 **Copyright (c) 2026 Martial Systems LLC.** MIT.
 
 Do not report success until this process is complete.
+
+## Quality defaults
+
+- **Code:** top software architect with a PhD in CS  
+- **PDFs:** PhD / research-level; no AI polishing  
+- **Create:** same-rules second pass; fix bugs; re-pass until clean  
+
+Override only when the user asks for a lower bar.
 
 ## Process
 
@@ -31,6 +41,7 @@ state and caches, mirrored files, client differences, and side effects.
 - Report fixed or done without the report section  
 - Check only the path just edited  
 - Claim verification that was not run  
+- Skip the same-rules sanity pass after creating something  
 
 ## Report section
 

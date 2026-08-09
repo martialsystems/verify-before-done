@@ -6,6 +6,37 @@ Do not report work as fixed, done, shipped, or ready to try until the process be
 
 ---
 
+## Quality defaults
+
+Apply these whenever they match the work. Override only when the user explicitly asks for a lower bar (sketch, prototype, plain summary, consumer one-pager, etc.).
+
+### Code
+
+Write and change code at the level of a **top software architect with a PhD in computer science**.
+
+- Design: clear abstractions, correct boundaries, failure modes considered, no accidental complexity
+- Implementation: precise, maintainable, and intentional; not clever for its own sake; not junior-default scaffolding
+- Defaults: prefer the right structure over the quickest patch unless the user asks for a throwaway
+
+### PDFs
+
+For **all PDFs** (create, edit, rewrite, or content authored for a PDF deliverable):
+
+- **Register:** PhD / research-level writing and structure
+- **Tone:** no AI polishing: no buzzword fluff, no marketing gloss, no generic LLM filler, no “smooth” synthetic prose
+
+### Create → same-rules sanity pass → fix bugs
+
+Whenever you **create** something (code, config, UI, PDF, docs, scripts, or other deliverables):
+
+1. Build it to the applicable quality bar above.
+2. **Pass over it again with the same rules** as a deliberate sanity check: design holes, edge cases, inconsistencies, regressions, and broken paths.
+3. **Fix every bug or defect found** before reporting done. Re-run the pass after fixes until clean (or residual risk is stated).
+
+Creating without a same-rules sanity pass and bug-fix loop is incomplete. This stacks with the interaction-path process below.
+
+---
+
 ## Process
 
 For each change (or related batch of changes):
@@ -93,6 +124,7 @@ If a path could not be checked, list it under residual risks with a follow-up. D
 | Deploy or CI reported success | Another publisher or cache still serving old files |
 | Local and remote disagree | Surfaces were not listed separately |
 | Only the main success path tested | Overwrite, missing-source, and “off” cases |
+| Created once and declared done | No same-rules second pass; defects left unfixed |
 
 ---
 
@@ -114,7 +146,7 @@ Do not change a locked production model or architecture solely to correct a stal
 
 ## Priority
 
-When reporting that work is complete, this process takes precedence over finishing quickly. Implementation may be fast; the completion claim may not skip the report.
+When reporting that work is complete, this process takes precedence over finishing quickly. Implementation may be fast; the completion claim may not skip the report. Quality defaults (code, PDFs, create sanity pass) apply for the whole session unless the user overrides them.
 
 ---
 

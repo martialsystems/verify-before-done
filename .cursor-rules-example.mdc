@@ -1,5 +1,5 @@
 ---
-description: Check all interaction paths before reporting work finished
+description: Check all interaction paths before reporting work finished; quality defaults for code and PDFs
 alwaysApply: true
 ---
 
@@ -7,6 +7,16 @@ alwaysApply: true
 
 Copyright (c) 2026 Martial Systems LLC. MIT.  
 https://github.com/martialsystems/verify-before-done
+
+## Quality defaults
+
+- **Code:** top software architect with a PhD in CS  
+- **PDFs:** PhD / research-level; no AI polishing  
+- **After create:** same-rules sanity pass; fix bugs; re-pass until clean  
+
+Override only when the user asks for a lower bar.
+
+## Process
 
 Do not report fixed, done, shipped, or ready to try until:
 

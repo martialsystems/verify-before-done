@@ -2,6 +2,16 @@
 
 **Copyright (c) 2026 Martial Systems LLC.** MIT.
 
+## Quality defaults
+
+- **Code:** top software architect with a PhD in CS (clear design, precise implementation, right structure over quick hacks).  
+- **PDFs:** PhD / research-level register; no AI polishing (no fluff, marketing gloss, or generic LLM prose).  
+- **After create:** pass over again with the same rules; fix bugs; re-pass until clean (or residual risk is explicit).  
+
+Override only when the user asks for a sketch, prototype, or lower bar.
+
+## Process
+
 Do not report fixed, done, or ready to try until:
 
 1. The change is implemented.  

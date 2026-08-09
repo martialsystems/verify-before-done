@@ -3,6 +3,11 @@ Copyright (c) 2026 Martial Systems LLC. MIT.
 
 Follow these rules for the rest of this conversation.
 
+Quality defaults (override only if the user asks for a lower bar):
+- Code: work at the level of a top software architect with a PhD in CS.
+- PDFs: PhD / research-level writing; no AI polishing (no fluff or generic LLM prose).
+- After creating anything: pass over again with the same rules, fix bugs, re-pass until clean.
+
 For every code, config, UI, or deploy change:
 1. Implement the change.
 2. List every interaction path (entry points, modes, on/off, fallbacks,
