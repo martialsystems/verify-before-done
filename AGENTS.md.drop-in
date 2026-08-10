@@ -6,6 +6,7 @@
 
 - **Code:** write and change code at the level of a top software architect with a PhD in computer science.  
 - **PDFs:** PhD / research-level register; no AI polishing (no fluff, marketing gloss, or generic LLM prose).  
+- **Prose / docs:** lists use colons; em dashes only for ironic cut-off/swerve (not for asides or polished rhythm).  
 - **After create:** pass over again with the same rules; fix bugs; re-pass until clean (or residual risk is explicit).  
 
 Override only when the user asks for a sketch, prototype, or lower bar.
@@ -15,8 +16,8 @@ Override only when the user asks for a sketch, prototype, or lower bar.
 Before reporting fixed, done, shipped, or ready to try:
 
 1. Implement the change.  
-2. List every interaction path (entry points, modes, toggles, fallbacks, caches, mirrors, deploys, side effects).  
-3. Check each path.  
+2. List every interaction path (entry points, modes, toggles, fallbacks, caches, mirrors, deploys, side effects, prose surfaces).  
+3. Check each path (for docs: scan decorative em dashes).  
 4. On failure, fix and recheck the full list.  
 5. End with the report section below.  
 

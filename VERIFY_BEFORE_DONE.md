@@ -25,12 +25,30 @@ For **all PDFs** (create, edit, rewrite, or content authored for a PDF deliverab
 - **Register:** PhD / research-level writing and structure
 - **Tone:** no AI polishing: no buzzword fluff, no marketing gloss, no generic LLM filler, no “smooth” synthetic prose
 
+### Prose and documentation (all assistant writing)
+
+Applies to chat, README/docs, commit messages, PR text, comments, and generated user-facing text.
+
+**Lists / labels:** use a **colon**, not an em dash or en dash.
+
+- Do: `Channels: named state slots with reducers`
+- Do not: `Channels — named state slots with reducers`
+
+**Em dashes:** not default punctuation (not for asides, apposition, or polished rhythm). Prefer commas, periods, or colons.
+
+Use an em dash **only for ironic cut-off / swerve** (you start one thought, stop, say something else):
+
+- Do: `I was going to ship Friday—actually, scrap that.`
+- Do not: `Never auto-posts — you paste yourself.` (use a colon)
+
+Before reporting done on doc or prose edits: scan for decorative em/en dashes and fix them.
+
 ### Create → same-rules sanity pass → fix bugs
 
 Whenever you **create** something (code, config, UI, PDF, docs, scripts, or other deliverables):
 
 1. Build it to the applicable quality bar above.
-2. **Pass over it again with the same rules** as a deliberate sanity check: design holes, edge cases, inconsistencies, regressions, and broken paths.
+2. **Pass over it again with the same rules** as a deliberate sanity check: design holes, edge cases, inconsistencies, regressions, broken paths, and decorative em dashes in prose.
 3. **Fix every bug or defect found** before reporting done. Re-run the pass after fixes until clean (or residual risk is stated).
 
 Creating without a same-rules sanity pass and bug-fix loop is incomplete. This stacks with the interaction-path process below.
@@ -41,10 +59,10 @@ Creating without a same-rules sanity pass and bug-fix loop is incomplete. This s
 
 For each change (or related batch of changes):
 
-1. Make the change.  
+1. Make the change at the quality defaults.  
 2. List every path that can reach the change (interaction map).  
-3. Check each path (tests, static review, scripts, or a written audit when a runtime check is not possible).  
-4. If a check fails or is unclear, fix it and check the full list again—not only the failing item.  
+3. Check each path (tests, static review, scripts, or a written audit when a runtime check is not possible). For prose/docs: check punctuation defaults.  
+4. If a check fails or is unclear, fix it and check the full list again (not only the failing item).  
 5. Report what changed, what was checked, and any remaining risk.
 
 ### Do not
@@ -52,7 +70,8 @@ For each change (or related batch of changes):
 - Report success after a single edit without the checks above.  
 - Check only the path you just modified.  
 - Leave unchecked branches as “probably fine” without naming them as residual risk.  
-- Claim verification that was not performed.
+- Claim verification that was not performed.  
+- Ship README/docs full of decorative em dashes while quality defaults forbid them.
 
 ---
 
@@ -70,6 +89,7 @@ Build a short checklist for the current change.
 | Duplicates | Mirrored pages (`foo.html` vs `foo/index.html`), copied assets, second publishers |
 | Clients | Mobile vs desktop, cache-busted URLs, APIs that need a user gesture |
 | Side effects | Other code that still runs in parallel with the new path |
+| Prose surfaces | README, docs, commits, user-facing strings, generated drafts |
 
 If another path still produces the previous or dominant result, the work is not finished.
 
@@ -84,7 +104,8 @@ Use more than one method when the change is risky:
 - Search for all call sites; remove leftover hard-coded defaults  
 - Trace user action → handler → library → any extra side channel  
 - Confirm prior behavior still works when the feature is off or empty  
-- When UI cannot be observed: compare data (payloads, attributes, hashes, HTTP bodies)
+- When UI cannot be observed: compare data (payloads, attributes, hashes, HTTP bodies)  
+- For docs/prose: search for decorative `—` / dash-asides; fix to colons or cut-off-only em dashes  
 
 ---
 
@@ -125,6 +146,7 @@ If a path could not be checked, list it under residual risks with a follow-up. D
 | Local and remote disagree | Surfaces were not listed separately |
 | Only the main success path tested | Overwrite, missing-source, and “off” cases |
 | Created once and declared done | No same-rules second pass; defects left unfixed |
+| Draft logic fixed for punctuation | README still full of decorative em dashes |
 
 ---
 
@@ -146,7 +168,7 @@ Do not change a locked production model or architecture solely to correct a stal
 
 ## Priority
 
-When reporting that work is complete, this process takes precedence over finishing quickly. Implementation may be fast; the completion claim may not skip the report. Quality defaults (code, PDFs, create sanity pass) apply for the whole session unless the user overrides them.
+When reporting that work is complete, this process takes precedence over finishing quickly. Implementation may be fast; the completion claim may not skip the report. Quality defaults (code, PDFs, prose/punctuation, create sanity pass) apply for the whole session unless the user overrides them.
 
 ---
 

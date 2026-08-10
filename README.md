@@ -2,7 +2,7 @@
 
 Instructions for coding assistants: apply a high quality bar, check every path that can touch a change, pass over new work with the same rules, and fix bugs before reporting that the work is finished.
 
-Copyright (c) 2026 Martial Systems LLC. MIT license — see [LICENSE](./LICENSE).
+Copyright (c) 2026 Martial Systems LLC. MIT license: see [LICENSE](./LICENSE).
 
 <p align="right">
   <a href="https://ko-fi.com/martialgames"><img src="https://img.shields.io/badge/Donate-Ko--fi-ff5e5b?style=flat-square&logo=ko-fi&logoColor=white" alt="Donate on Ko-fi" /></a>
@@ -14,7 +14,7 @@ Copyright (c) 2026 Martial Systems LLC. MIT license — see [LICENSE](./LICENSE)
 
 ## Purpose
 
-Assistants often change one code path, confirm that path works, and report success while another entry point, deploy step, cache, or mirrored file still behaves the old way. They also ship junior-default code, AI-polished PDF prose, or a first draft with no second pass.
+Assistants often change one code path, confirm that path works, and report success while another entry point, deploy step, cache, or mirrored file still behaves the old way. They also ship junior-default code, AI-polished PDF prose, decorative em dashes in docs, or a first draft with no second pass.
 
 This repository is a short set of rules you attach to a project or chat so the assistant:
 
@@ -34,6 +34,7 @@ There is nothing to install. Copy a markdown file into your tools.
 |---------|------------------------------------------|
 | **Code** | Top software architect with a PhD in CS: clear design, precise implementation, right structure over quick hacks |
 | **PDFs** | PhD / research-level register; no AI polishing (no fluff, marketing gloss, or generic LLM prose) |
+| **Prose / docs** | Lists use colons; em dashes only for ironic cut-off/swerve (not for asides or polished rhythm) |
 | **After create** | Same-rules sanity pass; fix defects; re-pass until clean (or residual risk is explicit) |
 
 ---

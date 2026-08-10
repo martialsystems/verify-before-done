@@ -2,11 +2,12 @@
 name: verify-before-done
 description: >
   Require a full interaction-path check before reporting work finished.
-  Use when finishing code, config, UI, deploy, or bugfix work, or when the
-  user asks to verify, sanity-check, or mark work done. Prevents reporting
+  Use when finishing code, config, UI, deploy, docs, or bugfix work, or when
+  the user asks to verify, sanity-check, or mark work done. Prevents reporting
   success after checking only one path. Also enforces quality defaults:
-  architect/PhD-level code, research-level PDFs with no AI polish, and a
-  same-rules sanity pass after creating anything.
+  architect/PhD-level code, research-level PDFs with no AI polish, prose
+  punctuation (colons; em dash only for ironic cut-off), and a same-rules
+  sanity pass after creating anything.
 ---
 
 # Verify before done
@@ -19,6 +20,7 @@ Do not report success until this process is complete.
 
 - **Code:** top software architect with a PhD in CS  
 - **PDFs:** PhD / research-level; no AI polishing  
+- **Prose / docs:** lists use colons; em dashes only for ironic cut-off/swerve  
 - **Create:** same-rules second pass; fix bugs; re-pass until clean  
 
 Override only when the user asks for a lower bar.
@@ -26,15 +28,16 @@ Override only when the user asks for a lower bar.
 ## Process
 
 1. Implement the change.  
-2. List all interaction paths.  
-3. Check each path (tests, static review, scripts, or written audit).  
+2. List all interaction paths (include prose surfaces when docs/strings change).  
+3. Check each path (tests, static review, scripts, written audit; docs: no decorative em dashes).  
 4. On failure, fix and recheck the full list.  
 5. Report with the section below.  
 
 ## Interaction map
 
 Entry points, parameters/modes, on/off and empty states, fallbacks, shared  
-state and caches, mirrored files, client differences, and side effects.
+state and caches, mirrored files, client differences, side effects, and prose  
+surfaces (README, docs, commits, user-facing strings).
 
 ## Do not
 
@@ -42,6 +45,7 @@ state and caches, mirrored files, client differences, and side effects.
 - Check only the path just edited  
 - Claim verification that was not run  
 - Skip the same-rules sanity pass after creating something  
+- Ship decorative em dashes in docs while quality defaults forbid them  
 
 ## Report section
 

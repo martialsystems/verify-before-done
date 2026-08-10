@@ -1,5 +1,5 @@
 ---
-description: Check all interaction paths before reporting work finished; quality defaults for code and PDFs
+description: Check all interaction paths before reporting work finished; quality defaults for code, PDFs, and prose
 alwaysApply: true
 ---
 
@@ -12,6 +12,7 @@ https://github.com/martialsystems/verify-before-done
 
 - **Code:** top software architect with a PhD in CS  
 - **PDFs:** PhD / research-level; no AI polishing  
+- **Prose / docs:** lists use colons; em dashes only for ironic cut-off/swerve  
 - **After create:** same-rules sanity pass; fix bugs; re-pass until clean  
 
 Override only when the user asks for a lower bar.
@@ -20,8 +21,8 @@ Override only when the user asks for a lower bar.
 
 Do not report fixed, done, shipped, or ready to try until:
 
-1. Every interaction path for the change is listed  
-2. Each path is checked (tests, search, scripts, or written audit)  
+1. Every interaction path for the change is listed (include prose surfaces)  
+2. Each path is checked (tests, search, scripts, or written audit; docs scanned for decorative em dashes)  
 3. The full list is rechecked after any fix  
 4. The report section below is filled in  
 
