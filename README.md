@@ -26,6 +26,8 @@ This repository is a short set of rules you attach to a project or chat so the a
 
 There is nothing to install. Copy a markdown file into your tools.
 
+**Hardwiring into all chats:** put the short rule or [PASTE_BLOCK.txt](./PASTE_BLOCK.txt) into your tool’s always-on instructions (custom instructions, user rules, project rules with always-apply, or a root [AGENTS.md](./AGENTS.md.drop-in)). That way every new chat inherits the process without re-pasting. This is still a rule the host injects, not a plugin: the model can ignore it, but most tools will load it on every session once it is set there.
+
 ---
 
 ## Quality defaults
