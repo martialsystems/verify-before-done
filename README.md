@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="icons/icon128.png" width="96" height="96" alt="Verify Before Done" />
+</p>
+
 # Verify Before Done
 
 Instructions for coding assistants: apply a high quality bar, check every path that can touch a change, pass over new work with the same rules, and fix bugs before reporting that the work is finished.
