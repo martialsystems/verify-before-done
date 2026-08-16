@@ -59,11 +59,13 @@ Creating without a same-rules sanity pass and bug-fix loop is incomplete. This s
 
 For each change (or related batch of changes):
 
-1. Make the change at the quality defaults.  
-2. List every path that can reach the change (interaction map).  
-3. Check each path (tests, static review, scripts, or a written audit when a runtime check is not possible). For prose/docs: check punctuation defaults.  
-4. If a check fails or is unclear, fix it and check the full list again (not only the failing item).  
-5. Report what changed, what was checked, and any remaining risk.
+1. In a git working tree: fetch first. If origin is ahead, pull that tree before editing (local without a fetch can be old). If origin is not ahead and the tree is already edited, that is finish-later work: do not discard it.  
+2. Make the change at the quality defaults.  
+3. List every path that can reach the change (interaction map).  
+4. Check each path (tests, static review, scripts, or a written audit when a runtime check is not possible). For prose/docs: check punctuation defaults.  
+5. If a check fails or is unclear, fix it and check the full list again (not only the failing item).  
+6. Push completed work if the user did not ask to hold it (forgot-to-push default). If you do not push, the report must say why.  
+7. Report what changed, what was checked, the git disposition, and any remaining risk.
 
 ### Do not
 
@@ -71,7 +73,10 @@ For each change (or related batch of changes):
 - Check only the path you just modified.  
 - Leave unchecked branches as “probably fine” without naming them as residual risk.  
 - Claim verification that was not performed.  
-- Ship README/docs full of decorative em dashes while quality defaults forbid them.
+- Ship README/docs full of decorative em dashes while quality defaults forbid them.  
+- Implement on a local tree that is behind origin after a fetch was possible.  
+- Leave finished work unpushed without saying why.  
+- Discard finish-later local edits to make a pull easy.
 
 ---
 
@@ -90,6 +95,7 @@ Build a short checklist for the current change.
 | Clients | Mobile vs desktop, cache-busted URLs, APIs that need a user gesture |
 | Side effects | Other code that still runs in parallel with the new path |
 | Prose surfaces | README, docs, commits, user-facing strings, generated drafts |
+| Git | Fetch origin before edit; pull if ahead; finish-later if dirty and not ahead; push or say why |
 
 If another path still produces the previous or dominant result, the work is not finished.
 
@@ -106,6 +112,7 @@ Use more than one method when the change is risky:
 - Confirm prior behavior still works when the feature is off or empty  
 - When UI cannot be observed: compare data (payloads, attributes, hashes, HTTP bodies)  
 - For docs/prose: search for decorative `—` / dash-asides; fix to colons or cut-off-only em dashes  
+- For git: `git fetch`, then compare to `@{upstream}` (or `origin/HEAD`); pull if behind; do not treat an unfetched local as current  
 
 ---
 
@@ -128,10 +135,38 @@ report only when the checklist passes, or residual risk is stated clearly
 - Interaction map:
 - Verified: (path → method → pass/fail)
 - Bugs found in verify pass:
+- Git:
 - Residual risks:
 ```
 
+**Git line** (required in a git working tree; write `not a git repo` otherwise):
+
+- Fetched; origin ahead → pulled `<sha>`
+- No recent push; finish-later `<paths>` (uncommitted or unpushed unfinished work)
+- Pushed `<remote/branch@sha>`
+- Did not push: `<reason>` (finish later, user hold, no remote, diverged, offline, secrets, tests failed)
+
 If a path could not be checked, list it under residual risks with a follow-up. Do not claim full completion.
+
+---
+
+## Git (local can be old)
+
+This is part of verify-before-done, not a separate rule.
+
+**Before editing** in a git working tree:
+
+1. `git fetch` (tracking refs without a fetch are not current).
+2. If origin is ahead: pull (`git pull --ff-only` when it will fast-forward). Work from that tree.
+3. If origin is not ahead and the tree has uncommitted or unpushed edits: **finish later**. Continue that work or leave it and say so. Do not throw it away.
+4. If origin is ahead **and** the tree is dirty: do not discard local work to take the pull. Stash, commit, or report both. Then integrate. Never `reset --hard` to make the pull easy.
+
+**Before claiming done:**
+
+- If the change is complete and the user did not ask to hold the push: **push**. Commit first when the work is finished and still uncommitted.
+- If you do not push: state why on the Git line. Silent unpushed finished work is a failed verify.
+
+**Forbidden:** force-push unless the user ordered it; `reset --hard` or discard of finish-later edits to make a pull easy.
 
 ---
 
@@ -144,6 +179,9 @@ If a path could not be checked, list it under residual risks with a follow-up. D
 | Feature flag path updated | Default still forces old behavior |
 | Deploy or CI reported success | Another publisher or cache still serving old files |
 | Local and remote disagree | Surfaces were not listed separately |
+| Implemented on local without fetch | Origin already had a newer push |
+| Finished work left unpushed | Forgot-to-push default is to push, or say why not |
+| Pulled over dirty finish-later work | Keep or stash; do not discard |
 | Only the main success path tested | Overwrite, missing-source, and “off” cases |
 | Created once and declared done | No same-rules second pass; defects left unfixed |
 | Draft logic fixed for punctuation | README still full of decorative em dashes |

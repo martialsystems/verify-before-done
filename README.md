@@ -23,10 +23,12 @@ Assistants often change one code path, confirm that path works, and report succe
 This repository is a short set of rules you attach to a project or chat so the assistant:
 
 1. Builds to the quality defaults (code and PDFs)  
-2. Lists every path that can hit the change  
-3. Checks each of them  
-4. After creating something, re-passes with the same rules and fixes bugs  
-5. Reports only after that  
+2. Fetches git before editing; pulls if origin is ahead; treats dirty local with no new remote as finish-later  
+3. Lists every path that can hit the change  
+4. Checks each of them  
+5. After creating something, re-passes with the same rules and fixes bugs  
+6. Pushes completed work (or says why not)  
+7. Reports only after that  
 
 There is nothing to install. Copy a markdown file into your tools.
 
@@ -65,8 +67,10 @@ Session line (optional):
 ## Required process
 
 ```text
-implement at quality bar → list interaction paths → check each path
-  → same-rules sanity pass on new work → fix failures → recheck all paths → report
+fetch git (pull if origin ahead; note finish-later if local dirty)
+  → implement at quality bar → list interaction paths → check each path
+  → same-rules sanity pass on new work → fix failures → recheck all paths
+  → push or say why not → report
 ```
 
 Do not report “fixed”, “done”, or “try it” after checking only the path you just edited.  
@@ -80,6 +84,7 @@ Every completion report must include:
 - Interaction map:
 - Verified: (path → method → pass/fail)
 - Bugs found in verify pass:
+- Git:
 - Residual risks:
 ```
 

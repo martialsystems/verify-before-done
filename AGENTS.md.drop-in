@@ -15,13 +15,16 @@ Override only when the user asks for a sketch, prototype, or lower bar.
 
 Before reporting fixed, done, shipped, or ready to try:
 
-1. Implement the change.  
-2. List every interaction path (entry points, modes, toggles, fallbacks, caches, mirrors, deploys, side effects, prose surfaces).  
-3. Check each path (for docs: scan decorative em dashes).  
-4. On failure, fix and recheck the full list.  
-5. End with the report section below.  
+1. In a git tree: fetch. If origin is ahead, pull before editing. If not ahead and already edited: finish-later, do not discard.  
+2. Implement the change.  
+3. List every interaction path (entry points, modes, toggles, fallbacks, caches, mirrors, deploys, side effects, prose surfaces, git).  
+4. Check each path (for docs: scan decorative em dashes).  
+5. On failure, fix and recheck the full list.  
+6. Push completed work unless the user asked to hold it. If you do not push, the Git line must say why.  
+7. End with the report section below.  
 
-Do not report success after checking only one path. Do not claim checks that were not run.
+Do not report success after checking only one path. Do not claim checks that were not run.  
+Do not implement on a local that is behind origin after a fetch was possible.
 
 ```text
 ## Verify-before-done report
@@ -29,6 +32,7 @@ Do not report success after checking only one path. Do not claim checks that wer
 - Interaction map:
 - Verified: (path → method → pass/fail)
 - Bugs found in verify pass:
+- Git: fetched; origin ahead → pulled <sha> | no recent push; finish-later <paths> | pushed <ref@sha> | did not push: <reason> | not a git repo
 - Residual risks:
 ```
 

@@ -6,8 +6,9 @@ description: >
   the user asks to verify, sanity-check, or mark work done. Prevents reporting
   success after checking only one path. Also enforces quality defaults:
   architect/PhD-level code, research-level PDFs with no AI polish, prose
-  punctuation (colons; em dash only for ironic cut-off), and a same-rules
-  sanity pass after creating anything.
+  punctuation (colons; em dash only for ironic cut-off), a same-rules
+  sanity pass after creating anything, and git remote-first (fetch/pull if
+  origin is ahead; finish-later if local is edited; push or say why).
 ---
 
 # Verify before done
@@ -27,17 +28,20 @@ Override only when the user asks for a lower bar.
 
 ## Process
 
-1. Implement the change.  
-2. List all interaction paths (include prose surfaces when docs/strings change).  
-3. Check each path (tests, static review, scripts, written audit; docs: no decorative em dashes).  
-4. On failure, fix and recheck the full list.  
-5. Report with the section below.  
+1. In a git tree: fetch. If origin is ahead, pull before editing. If not ahead and the tree is already edited: finish-later, do not discard.  
+2. Implement the change.  
+3. List all interaction paths (include prose surfaces when docs/strings change).  
+4. Check each path (tests, static review, scripts, written audit; docs: no decorative em dashes).  
+5. On failure, fix and recheck the full list.  
+6. Push completed work unless the user asked to hold it. If you do not push, the Git line must say why.  
+7. Report with the section below.  
 
 ## Interaction map
 
 Entry points, parameters/modes, on/off and empty states, fallbacks, shared  
-state and caches, mirrored files, client differences, side effects, and prose  
-surfaces (README, docs, commits, user-facing strings).
+state and caches, mirrored files, client differences, side effects, prose  
+surfaces (README, docs, commits, user-facing strings), and git (fetch /  
+finish-later / push or why-not).
 
 ## Do not
 
@@ -46,6 +50,8 @@ surfaces (README, docs, commits, user-facing strings).
 - Claim verification that was not run  
 - Skip the same-rules sanity pass after creating something  
 - Ship decorative em dashes in docs while quality defaults forbid them  
+- Implement on a local that is behind origin after a fetch was possible  
+- Leave finished work unpushed without saying why  
 
 ## Report section
 
@@ -55,6 +61,7 @@ surfaces (README, docs, commits, user-facing strings).
 - Interaction map:
 - Verified: (path → method → pass/fail)
 - Bugs found in verify pass:
+- Git: fetched; origin ahead → pulled <sha> | no recent push; finish-later <paths> | pushed <ref@sha> | did not push: <reason> | not a git repo
 - Residual risks:
 ```
 

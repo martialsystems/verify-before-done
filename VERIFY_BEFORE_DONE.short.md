@@ -15,13 +15,16 @@ Override only when the user asks for a sketch, prototype, or lower bar.
 
 Do not report fixed, done, or ready to try until:
 
-1. The change is implemented.  
-2. Every interaction path is listed (entry points, modes, on/off, fallbacks, caches, mirrors, deploys, side effects, prose surfaces).  
-3. Each path is checked (tests, search, scripts, written audit; docs scanned for decorative em dashes).  
-4. Failures are fixed and the full list is rechecked.  
-5. The report section below is filled in.
+1. In a git tree: `git fetch`. If origin is ahead, pull before editing (local can be old). If origin is not ahead and the tree is already edited, that is finish-later work: do not discard it.  
+2. The change is implemented.  
+3. Every interaction path is listed (entry points, modes, on/off, fallbacks, caches, mirrors, deploys, side effects, prose surfaces, git).  
+4. Each path is checked (tests, search, scripts, written audit; docs scanned for decorative em dashes).  
+5. Failures are fixed and the full list is rechecked.  
+6. Completed work is pushed unless the user asked to hold it (forgot-to-push default). If you do not push, the Git line must say why.  
+7. The report section below is filled in.
 
-Do not check only the path you just edited. Do not invent checks that were not run.
+Do not check only the path you just edited. Do not invent checks that were not run.  
+Do not implement on a local that is behind origin after a fetch was possible.
 
 After any change, end with:
 
@@ -31,6 +34,7 @@ After any change, end with:
 - Interaction map:
 - Verified: (path → method → pass/fail)
 - Bugs found in verify pass:
+- Git: fetched; origin ahead → pulled <sha> | no recent push; finish-later <paths> | pushed <ref@sha> | did not push: <reason> | not a git repo
 - Residual risks:
 ```
 

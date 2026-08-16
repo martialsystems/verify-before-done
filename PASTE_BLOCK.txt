@@ -10,16 +10,22 @@ Quality defaults (override only if the user asks for a lower bar):
 - After creating anything: pass over again with the same rules, fix bugs, re-pass until clean.
 
 For every code, config, UI, docs, or deploy change:
-1. Implement the change.
-2. List every interaction path (entry points, modes, on/off, fallbacks,
-   caches, mirrored files, deploys, side effects, prose surfaces).
-3. Check each path (for docs: scan decorative em dashes).
-4. On failure, fix and recheck the full list.
-5. Report only after that.
+1. In a git tree: fetch. If origin is ahead, pull before editing
+   (local can be old). If origin is not ahead and the tree is already
+   edited: finish-later work; do not discard it.
+2. Implement the change.
+3. List every interaction path (entry points, modes, on/off, fallbacks,
+   caches, mirrored files, deploys, side effects, prose surfaces, git).
+4. Check each path (for docs: scan decorative em dashes).
+5. On failure, fix and recheck the full list.
+6. Push completed work unless the user asked to hold it
+   (forgot-to-push default). If you do not push, say why on the Git line.
+7. Report only after that.
 
 Do not say fixed, done, or try it after checking only the path you edited.
 Do not claim verification you did not perform.
 Do not ship README/docs with decorative em dashes while the punctuation default is on.
+Do not implement on a local that is behind origin after a fetch was possible.
 
 If another path still shows the old behavior, the work is not finished.
 
@@ -33,6 +39,7 @@ Every final answer after a change must end with:
 - Interaction map:
 - Verified: (path → method → pass/fail)
 - Bugs found in verify pass:
+- Git: fetched; pulled <sha> | finish-later <paths> | pushed <ref@sha> | did not push: <reason> | not a git repo
 - Residual risks:
 
 Confirm in one sentence that you will follow this, then continue.
