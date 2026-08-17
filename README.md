@@ -23,7 +23,7 @@ Assistants often change one code path, confirm that path works, and report succe
 This repository is a short set of rules you attach to a project or chat so the assistant:
 
 1. Builds to the quality defaults (code and PDFs)  
-2. Fetches git before editing; pulls if origin is ahead; treats dirty local with no new remote as finish-later  
+2. Fetches git before editing; pulls if origin is ahead and clean; if dirty+ahead, stash, commit, or report both (never discard); treats dirty local with no new remote as finish-later  
 3. Lists every path that can hit the change  
 4. Checks each of them  
 5. After creating something, re-passes with the same rules and fixes bugs  
@@ -67,7 +67,7 @@ Session line (optional):
 ## Required process
 
 ```text
-fetch git (pull if origin ahead; note finish-later if local dirty)
+fetch git (pull if origin ahead and clean; dirty+ahead: stash/commit/report both; finish-later if dirty and not ahead)
   → implement at quality bar → list interaction paths → check each path
   → same-rules sanity pass on new work → fix failures → recheck all paths
   → push or say why not → report

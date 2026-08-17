@@ -7,12 +7,14 @@ Quality defaults (override only if the user asks for a lower bar):
 - Code: work at the level of a top software architect with a PhD in CS.
 - PDFs: PhD / research-level writing; no AI polishing (no fluff or generic LLM prose).
 - Prose/docs: lists use colons; em dashes only for ironic cut-off/swerve (not for asides or polished rhythm).
-- After creating anything: pass over again with the same rules, fix bugs, re-pass until clean.
+- After creating anything: pass over again with the same rules, fix bugs, re-pass until clean (or residual risk is explicit).
 
 For every code, config, UI, docs, or deploy change:
-1. In a git tree: fetch. If origin is ahead, pull before editing
-   (local can be old). If origin is not ahead and the tree is already
-   edited: finish-later work; do not discard it.
+1. In a git tree: fetch. If origin is ahead and the tree is clean, pull
+   before editing (local can be old). If origin is ahead and the tree is dirty:
+   stash, commit, or report both; never discard or reset --hard to take the
+   pull. If origin is not ahead and the tree is already edited: finish-later
+   work; do not discard it.
 2. Implement the change.
 3. List every interaction path (entry points, modes, on/off, fallbacks,
    caches, mirrored files, deploys, side effects, prose surfaces, git).
@@ -20,17 +22,21 @@ For every code, config, UI, docs, or deploy change:
 5. On failure, fix and recheck the full list.
 6. Push completed work unless the user asked to hold it
    (forgot-to-push default). If you do not push, say why on the Git line.
-7. Report only after that.
+7. Report only after the process is finished and the report is filled in.
 
-Do not say fixed, done, or try it after checking only the path you edited.
+Do not say fixed, done, or try it until the process is finished.
 Do not claim verification you did not perform.
+Do not treat unchecked paths as probably fine; name them under residual risks.
 Do not ship README/docs with decorative em dashes while the punctuation default is on.
 Do not implement on a local that is behind origin after a fetch was possible.
+Never force-push unless the user ordered it. Never reset --hard or discard
+finish-later work to make a pull easy.
 
 If another path still shows the old behavior, the work is not finished.
 
 For multi-surface deploys: do not overwrite newer files with older ones.
-Green CI does not mean the public site is current.
+Missing source keeps dest. Green CI does not mean the public site is current.
+Do not change locked production or architecture only to refresh a stale page.
 
 Every final answer after a change must end with:
 
@@ -39,7 +45,7 @@ Every final answer after a change must end with:
 - Interaction map:
 - Verified: (path → method → pass/fail)
 - Bugs found in verify pass:
-- Git: fetched; pulled <sha> | finish-later <paths> | pushed <ref@sha> | did not push: <reason> | not a git repo
+- Git: fetched; origin ahead → pulled <sha> | no recent push; finish-later <paths> | pushed <ref@sha> | did not push: <reason> | not a git repo
 - Residual risks:
 
 Confirm in one sentence that you will follow this, then continue.

@@ -59,7 +59,7 @@ Creating without a same-rules sanity pass and bug-fix loop is incomplete. This s
 
 For each change (or related batch of changes):
 
-1. In a git working tree: fetch first. If origin is ahead, pull that tree before editing (local without a fetch can be old). If origin is not ahead and the tree is already edited, that is finish-later work: do not discard it.  
+1. In a git working tree: fetch first (local without a fetch can be old). If origin is ahead and the tree is clean, pull before editing. If origin is ahead and the tree is dirty: stash, commit, or report both; never discard or `reset --hard` to take the pull. If origin is not ahead and the tree is already edited, that is finish-later work: do not discard it.  
 2. Make the change at the quality defaults.  
 3. List every path that can reach the change (interaction map).  
 4. Check each path (tests, static review, scripts, or a written audit when a runtime check is not possible). For prose/docs: check punctuation defaults.  
@@ -76,7 +76,9 @@ For each change (or related batch of changes):
 - Ship README/docs full of decorative em dashes while quality defaults forbid them.  
 - Implement on a local tree that is behind origin after a fetch was possible.  
 - Leave finished work unpushed without saying why.  
-- Discard finish-later local edits to make a pull easy.
+- Discard finish-later local edits to make a pull easy.  
+- Force-push unless the user ordered it.  
+- `reset --hard` to take a pull or throw away finish-later work.
 
 ---
 
@@ -95,7 +97,7 @@ Build a short checklist for the current change.
 | Clients | Mobile vs desktop, cache-busted URLs, APIs that need a user gesture |
 | Side effects | Other code that still runs in parallel with the new path |
 | Prose surfaces | README, docs, commits, user-facing strings, generated drafts |
-| Git | Fetch origin before edit; pull if ahead; finish-later if dirty and not ahead; push or say why |
+| Git | Fetch origin before edit; pull if ahead and clean; dirty+ahead: stash, commit, or report both; finish-later if dirty and not ahead; push or say why |
 
 If another path still produces the previous or dominant result, the work is not finished.
 
@@ -200,7 +202,7 @@ When the work touches sites, static hosts, shared JSON, or more than one publish
 | Local vs git vs public URL | Compare; do not assume they match |
 | Locked production configuration | Leave unchanged unless the user ordered a change |
 
-Do not change a locked production model or architecture solely to correct a stale public page.
+Missing source keeps dest. Do not change a locked production model or architecture solely to correct a stale public page.
 
 ---
 

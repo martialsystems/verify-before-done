@@ -15,7 +15,7 @@ Override only when the user asks for a sketch, prototype, or lower bar.
 
 Do not report fixed, done, or ready to try until:
 
-1. In a git tree: `git fetch`. If origin is ahead, pull before editing (local can be old). If origin is not ahead and the tree is already edited, that is finish-later work: do not discard it.  
+1. In a git tree: `git fetch`. If origin is ahead and the tree is clean, pull before editing. If origin is ahead and the tree is dirty: stash, commit, or report both; never discard or `reset --hard` to take the pull. If origin is not ahead and the tree is already edited, that is finish-later work: do not discard it.  
 2. The change is implemented.  
 3. Every interaction path is listed (entry points, modes, on/off, fallbacks, caches, mirrors, deploys, side effects, prose surfaces, git).  
 4. Each path is checked (tests, search, scripts, written audit; docs scanned for decorative em dashes).  
@@ -24,7 +24,9 @@ Do not report fixed, done, or ready to try until:
 7. The report section below is filled in.
 
 Do not check only the path you just edited. Do not invent checks that were not run.  
-Do not implement on a local that is behind origin after a fetch was possible.
+Do not implement on a local that is behind origin after a fetch was possible.  
+Do not treat unchecked paths as probably fine; name them under residual risks and do not claim full completion.  
+Never force-push unless the user ordered it. Never `reset --hard` or discard finish-later work to make a pull easy.
 
 After any change, end with:
 
@@ -39,7 +41,7 @@ After any change, end with:
 ```
 
 If another path still shows the old behavior, the work is not finished.  
-For deploys: do not overwrite newer artifacts with older ones; green CI does not prove the public surface is current.
+For deploys: do not overwrite newer artifacts with older ones. Missing source keeps dest. Green CI does not prove the public surface is current. Do not change locked production or architecture only to refresh a stale public page.
 
 ---
 
