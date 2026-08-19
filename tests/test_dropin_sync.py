@@ -21,6 +21,7 @@ REQUIRED = (
     "ahead and the tree is dirty",
     "force-push",
     "Missing source",
+    "390x844",
 )
 
 

@@ -94,7 +94,7 @@ Build a short checklist for the current change.
 | Fallbacks | Prefer-A-else-B paths; error handlers that hide behavior |
 | Shared state | Caches, globals, local storage, CDNs, shared deploy trees |
 | Duplicates | Mirrored pages (`foo.html` vs `foo/index.html`), copied assets, second publishers |
-| Clients | Mobile vs desktop, cache-busted URLs, APIs that need a user gesture |
+| Clients | Mobile vs desktop. For UI, layout, nav, or in-page jump changes: include phone-width (390x844) and desktop (~1280). The report must name the command that checked them. "I thought about mobile" is not a check. |
 | Side effects | Other code that still runs in parallel with the new path |
 | Prose surfaces | README, docs, commits, user-facing strings, generated drafts |
 | Git | Fetch origin before edit; pull if ahead and clean; dirty+ahead: stash, commit, or report both; finish-later if dirty and not ahead; push or say why |
@@ -113,6 +113,7 @@ Use more than one method when the change is risky:
 - Trace user action → handler → library → any extra side channel  
 - Confirm prior behavior still works when the feature is off or empty  
 - When UI cannot be observed: compare data (payloads, attributes, hashes, HTTP bodies)  
+- For UI / layout / nav / hash jumps: run a phone-width (390x844) and desktop (~1280) command (martialsys boards: `python3 viewer/scripts/viewport_sanity.py`). Name that command in the report. If none ran, residual risk; do not claim full completion.  
 - For docs/prose: search for decorative `—` / dash-asides; fix to colons or cut-off-only em dashes  
 - For git: `git fetch`, then compare to `@{upstream}` (or `origin/HEAD`); pull if behind; do not treat an unfetched local as current  
 

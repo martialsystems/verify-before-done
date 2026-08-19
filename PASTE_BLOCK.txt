@@ -18,7 +18,11 @@ For every code, config, UI, docs, or deploy change:
 2. Implement the change.
 3. List every interaction path (entry points, modes, on/off, fallbacks,
    caches, mirrored files, deploys, side effects, prose surfaces, git).
-4. Check each path (for docs: scan decorative em dashes).
+   For UI, layout, nav, or in-page jumps: include phone-width (390x844)
+   and desktop (~1280).
+4. Check each path (for docs: scan decorative em dashes). Phone-width
+   must be a named command (martialsys boards:
+   python3 viewer/scripts/viewport_sanity.py), not a thought.
 5. On failure, fix and recheck the full list.
 6. Push completed work unless the user asked to hold it
    (forgot-to-push default). If you do not push, say why on the Git line.

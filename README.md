@@ -24,7 +24,7 @@ This repository is a short set of rules you attach to a project or chat so the a
 
 1. Builds to the quality defaults (code and PDFs)  
 2. Fetches git before editing; pulls if origin is ahead and clean; if dirty+ahead, stash, commit, or report both (never discard); treats dirty local with no new remote as finish-later  
-3. Lists every path that can hit the change  
+3. Lists every path that can hit the change (for UI: phone-width 390x844 and desktop ~1280, via a named command)  
 4. Checks each of them  
 5. After creating something, re-passes with the same rules and fixes bugs  
 6. Pushes completed work (or says why not)  

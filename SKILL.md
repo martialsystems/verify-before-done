@@ -41,9 +41,12 @@ Override only when the user asks for a lower bar.
 ## Interaction map
 
 Entry points, parameters/modes, on/off and empty states, fallbacks, shared  
-state and caches, mirrored files, client differences, side effects, prose  
+state and caches, mirrored files, client differences (phone-width 390x844  
+and desktop ~1280 for UI, layout, nav, or in-page jumps), side effects, prose  
 surfaces (README, docs, commits, user-facing strings), and git (fetch /  
-pull if ahead and clean / dirty+ahead / finish-later / push or why-not).
+pull if ahead and clean / dirty+ahead / finish-later / push or why-not).  
+Phone-width must be a named command (martialsys boards:  
+`python3 viewer/scripts/viewport_sanity.py`). Thinking about mobile is not a check.
 
 ## Do not
 
