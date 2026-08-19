@@ -232,9 +232,32 @@ def dash_errors(
                 text = p.read_text(encoding="utf-8")
             except (OSError, UnicodeDecodeError):
                 continue
-        if any(ch in text for ch in DASH_CHARS):
-            errs.append("{0}: decorative em/en dash".format(p))
+        for i, line in enumerate(text.splitlines(), 1):
+            if _line_has_bad_dash(line):
+                errs.append("{0}:{1}: decorative em/en dash".format(p, i))
+                break
     return errs
+
+
+def _line_has_bad_dash(line: str) -> bool:
+    """Fail decorative list/apposition dashes; allow ironic cut-off em dashes.
+
+    Allowed: Friday—actually (letter/word cut-off, no spaces around U+2014).
+    Banned: Term — definition (space-dash-space) and any U+2013.
+    """
+    if "\u2013" in line:
+        return True
+    if "\u2014" not in line:
+        return False
+    if re.search(r"\s\u2014\s", line):
+        return True
+    for m in re.finditer("\u2014", line):
+        i = m.start()
+        left = line[i - 1] if i > 0 else ""
+        right = line[i + 1] if i + 1 < len(line) else ""
+        if not (left.isalnum() and right.isalnum()):
+            return True
+    return False
 
 
 def skip_path_errors(paths: Iterable[Path]) -> List[str]:

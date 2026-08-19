@@ -88,6 +88,21 @@ def test_dash_errors_on_md(tmp_path: Path):
     assert dash_errors([p]) == []
 
 
+def test_dash_errors_allows_cutoff_em_dash(tmp_path: Path):
+    p = tmp_path / "NOTE.md"
+    p.write_text(
+        "I was going to ship it Friday—actually, scrap that.\n",
+        encoding="utf-8",
+    )
+    assert dash_errors([p]) == []
+
+
+def test_dash_errors_rejects_en_dash(tmp_path: Path):
+    p = tmp_path / "NOTE.md"
+    p.write_text("Channels – named slots\n", encoding="utf-8")
+    assert dash_errors([p])
+
+
 def test_dash_scan_only_added_lines(tmp_path: Path):
     _git(tmp_path, "init", "-b", "main")
     _git(tmp_path, "config", "user.email", "t@example.com")

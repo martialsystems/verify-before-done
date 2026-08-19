@@ -90,7 +90,7 @@ Command: `python3 vbd_gate.py check --app-root DIR`. Wrapper: `bin/vbd`.
 |-------|------------------|
 | `fetch` | `git fetch` fails (no remote is not a fail) |
 | `origin_ahead` | Upstream is ahead. Dirty: stash, commit, or report both; never discard. Clean: pull before claiming done |
-| `dashes` | **Added** lines (git diff) in changed `.md` / `.txt` / `.html` contain U+2014 or U+2013, except `VERIFY_BEFORE_DONE.md`. Untracked files are scanned in full. Historical dashes already on HEAD do not fail a later edit |
+| `dashes` | **Added** lines (git diff) in changed `.md` / `.txt` / `.html` contain a decorative U+2014 or any U+2013, except `VERIFY_BEFORE_DONE.md`. Space-dash-space list/apposition fails. Ironic cut-off U+2014 with letters on both sides and no surrounding spaces is allowed. Untracked files are scanned in full. Historical dashes already on HEAD do not fail a later edit |
 | `skip_landing` | Any `.skip-juicy` hash target *contains* a chart wrap instead of *being* it (every skip href, not only the first) |
 | `viewport_sanity` | `viewer/scripts/viewport_sanity.py` exists, HTML/CSS changed, and that script exits non-zero (390x844 and ~1280 in-view when Chrome is present; static href check always) |
 | `claim_done` | `--claim-done` without `--promoted` or `--not-promoted` |
