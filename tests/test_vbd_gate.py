@@ -59,6 +59,19 @@ def test_dash_errors_on_md(tmp_path: Path):
     assert dash_errors([p]) == []
 
 
+def test_dash_scan_only_added_lines(tmp_path: Path):
+    _git(tmp_path, "init", "-b", "main")
+    _git(tmp_path, "config", "user.email", "t@example.com")
+    _git(tmp_path, "config", "user.name", "t")
+    (tmp_path / "HOWTO.md").write_text("Old — historical dash\n", encoding="utf-8")
+    _git(tmp_path, "add", "HOWTO.md")
+    _git(tmp_path, "commit", "-m", "init")
+    (tmp_path / "HOWTO.md").write_text("Old — historical dash\nNew: colon line\n", encoding="utf-8")
+    assert dash_errors([tmp_path / "HOWTO.md"], root=tmp_path) == []
+    (tmp_path / "HOWTO.md").write_text("Old — historical dash\nNew — also bad\n", encoding="utf-8")
+    assert dash_errors([tmp_path / "HOWTO.md"], root=tmp_path)
+
+
 def test_claim_done_requires_promote_flag(tmp_path: Path):
     rc = main(["check", "--app-root", str(tmp_path), "--claim-done"])
     assert rc == 2

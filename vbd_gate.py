@@ -175,17 +175,51 @@ def changed_paths(
     return out
 
 
-def dash_errors(paths: Iterable[Path]) -> List[str]:
+def _added_lines(root: Path, path: Path, from_ref: Optional[str], to_ref: Optional[str]) -> Optional[str]:
+    """Return added text if a git diff is available; None means scan the whole file."""
+    try:
+        rel = str(path.relative_to(root))
+    except ValueError:
+        return None
+    if from_ref and to_ref and to_ref != "0" * 40:
+        args = ["diff", "-U0", from_ref, to_ref, "--", rel]
+    else:
+        tracked = _git(root, ["ls-files", "--", rel])
+        if not (tracked.stdout or "").strip():
+            return None
+        args = ["diff", "-U0", "HEAD", "--", rel]
+    proc = _git(root, args)
+    if proc.returncode != 0:
+        return None
+    added = [
+        ln[1:]
+        for ln in (proc.stdout or "").splitlines()
+        if ln.startswith("+") and not ln.startswith("+++")
+    ]
+    return "\n".join(added)
+
+
+def dash_errors(
+    paths: Iterable[Path],
+    *,
+    root: Optional[Path] = None,
+    from_ref: Optional[str] = None,
+    to_ref: Optional[str] = None,
+) -> List[str]:
     errs: List[str] = []
     for p in paths:
         if p.suffix.lower() not in PROSE_SUFFIX:
             continue
         if p.name in DASH_ALLOW:
             continue
-        try:
-            text = p.read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError):
-            continue
+        text: Optional[str] = None
+        if root is not None:
+            text = _added_lines(root, p, from_ref, to_ref)
+        if text is None:
+            try:
+                text = p.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError):
+                continue
         if any(ch in text for ch in DASH_CHARS):
             errs.append("{0}: decorative em/en dash".format(p))
     return errs
@@ -313,7 +347,7 @@ def run_checks(
         errs.extend(oa)
     else:
         gates.append(_gate("fetch", [], skipped=True, detail="not requested"))
-    de = dash_errors(paths)
+    de = dash_errors(paths, root=root, from_ref=from_ref, to_ref=to_ref)
     gates.append(_gate("dashes", de))
     errs.extend(de)
     se = skip_path_errors(paths)
