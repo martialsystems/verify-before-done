@@ -79,6 +79,41 @@ def test_check_clean_git_repo(tmp_path: Path):
     assert rc == 0
 
 
+def test_skip_if_clean_ignores_untracked_dash(tmp_path: Path):
+    _git(tmp_path, "init", "-b", "main")
+    _git(tmp_path, "config", "user.email", "t@example.com")
+    _git(tmp_path, "config", "user.name", "t")
+    (tmp_path / "README.md").write_text("Hello: world\n", encoding="utf-8")
+    _git(tmp_path, "add", "README.md")
+    _git(tmp_path, "commit", "-m", "init")
+    (tmp_path / "WIP.md").write_text("Channels — later\n", encoding="utf-8")
+    rc = main(
+        ["check", "--app-root", str(tmp_path), "--tracked-only", "--skip-if-clean"]
+    )
+    assert rc == 0
+
+
+def test_stop_hook_allows_clean_turn(tmp_path: Path):
+    import json
+    from vbd_stop_hook import main as stop_main
+
+    _git(tmp_path, "init", "-b", "main")
+    _git(tmp_path, "config", "user.email", "t@example.com")
+    _git(tmp_path, "config", "user.name", "t")
+    (tmp_path / "README.md").write_text("Hello: world\n", encoding="utf-8")
+    _git(tmp_path, "add", "README.md")
+    _git(tmp_path, "commit", "-m", "init")
+    payload = json.dumps({"reason": "end_turn", "cwd": str(tmp_path), "workspaceRoot": str(tmp_path)})
+    import io
+
+    old = sys.stdin
+    try:
+        sys.stdin = io.StringIO(payload)
+        assert stop_main() == 0
+    finally:
+        sys.stdin = old
+
+
 def test_check_fails_new_html_skip_panel(tmp_path: Path):
     _git(tmp_path, "init", "-b", "main")
     _git(tmp_path, "config", "user.email", "t@example.com")

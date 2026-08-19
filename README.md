@@ -31,11 +31,19 @@ This repository is a short set of rules you attach to a project or chat so the a
 7. Pushes completed work (or says why not)  
 8. Reports only after that; `vbd_gate.py check --claim-done` must have passed  
 
-Rules still go in the chat. The **forgettable** checks are a command:
+You do not run this by hand before closing a chat. Grok's **Stop** hook runs
+`vbd_gate` when the agent tries to finish a turn. Git **pre-push** runs it if
+the chat never claimed done. Install once:
+
+```bash
+python3 vbd_gate.py grok-hook-install
+python3 vbd_gate.py hook-install --app-root ~/your_product
+```
+
+Manual (agents, or you if you want):
 
 ```bash
 python3 vbd_gate.py check --app-root ~/your_product --claim-done --not-promoted 'unique to this product'
-python3 vbd_gate.py hook-install --app-root ~/your_product
 ```
 
 `vbd_gate` fetches, refuses origin-ahead+dirty (does not discard), scans changed docs for decorative dashes, and fails a skip jump that lands on a panel instead of the chart. Pre-push runs the same gates so a forgotten check blocks the push.

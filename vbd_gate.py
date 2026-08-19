@@ -15,6 +15,7 @@ Exit 0 pass, 2 fail. Does not discard local work. Does not pull.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import stat
@@ -140,7 +141,13 @@ def origin_ahead_errors(root: Path) -> List[str]:
     ]
 
 
-def changed_paths(root: Path, *, from_ref: Optional[str] = None, to_ref: Optional[str] = None) -> List[Path]:
+def changed_paths(
+    root: Path,
+    *,
+    from_ref: Optional[str] = None,
+    to_ref: Optional[str] = None,
+    tracked_only: bool = False,
+) -> List[Path]:
     names: Set[str] = set()
     if from_ref and to_ref and to_ref != "0" * 40:
         if from_ref == "0" * 40:
@@ -149,11 +156,13 @@ def changed_paths(root: Path, *, from_ref: Optional[str] = None, to_ref: Optiona
             diff = _git(root, ["diff", "--name-only", from_ref, to_ref])
         names.update(ln.strip() for ln in (diff.stdout or "").splitlines() if ln.strip())
     else:
-        for args in (
+        cmds = (
             ["diff", "--name-only", "HEAD"],
             ["diff", "--cached", "--name-only"],
-            ["ls-files", "--others", "--exclude-standard"],
-        ):
+        )
+        if not tracked_only:
+            cmds = cmds + (["ls-files", "--others", "--exclude-standard"],)
+        for args in cmds:
             proc = _git(root, args)
             names.update(ln.strip() for ln in (proc.stdout or "").splitlines() if ln.strip())
     out: List[Path] = []
@@ -223,17 +232,23 @@ def run_checks(
     from_ref: Optional[str] = None,
     to_ref: Optional[str] = None,
     do_fetch: bool = True,
+    tracked_only: bool = False,
+    skip_if_clean: bool = False,
 ) -> List[str]:
     errs: List[str] = []
     if not is_git(root):
         return errs
+    paths = changed_paths(
+        root, from_ref=from_ref, to_ref=to_ref, tracked_only=tracked_only
+    )
+    if skip_if_clean and not paths:
+        return []
     if do_fetch:
         fe = git_fetch(root)
         if fe:
             errs.append(fe)
             return errs
         errs.extend(origin_ahead_errors(root))
-    paths = changed_paths(root, from_ref=from_ref, to_ref=to_ref)
     errs.extend(dash_errors(paths))
     errs.extend(ui_errors(root, paths))
     return errs
@@ -278,6 +293,31 @@ def hook_install(root: Path) -> None:
     print("installed {0}".format(path))
 
 
+def grok_hook_install() -> None:
+    dest_dir = Path.home() / ".grok" / "hooks"
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / "vbd-stop.json"
+    stop_py = PACK_ROOT / "vbd_stop_hook.py"
+    cmd = "{0} {1}".format(sys.executable, stop_py)
+    payload = {
+        "hooks": {
+            "Stop": [
+                {
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": cmd,
+                            "timeout": 90,
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+    dest.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    print("installed {0}".format(dest))
+
+
 def parse_hook_refs(text: str) -> List[Tuple[str, str]]:
     pairs: List[Tuple[str, str]] = []
     for line in text.splitlines():
@@ -292,7 +332,11 @@ def parse_hook_refs(text: str) -> List[Tuple[str, str]]:
 def cmd_check(args: argparse.Namespace) -> int:
     root = args.app_root.resolve()
     print("=== vbd_gate check {0} ===".format(root))
-    errs = run_checks(root)
+    errs = run_checks(
+        root,
+        tracked_only=bool(getattr(args, "tracked_only", False)),
+        skip_if_clean=bool(getattr(args, "skip_if_clean", False)),
+    )
     if args.claim_done:
         if not (args.promoted or args.not_promoted):
             errs.append(
@@ -351,8 +395,19 @@ def main(argv: Optional[List[str]] = None) -> int:
     c.add_argument("--claim-done", action="store_true")
     c.add_argument("--promoted", default="")
     c.add_argument("--not-promoted", default="")
+    c.add_argument(
+        "--tracked-only",
+        action="store_true",
+        help="Ignore untracked files (Stop hook: finish-later dirt must not block Q&A)",
+    )
+    c.add_argument(
+        "--skip-if-clean",
+        action="store_true",
+        help="Pass immediately when there are no changed files to gate",
+    )
     h = sub.add_parser("hook-install", help="Install a pre-push hook in --app-root")
     with_root(h)
+    sub.add_parser("grok-hook-install", help="Install the Grok Stop hook under ~/.grok/hooks")
     r = sub.add_parser("hook-run", help="Invoked by the pre-push hook")
     with_root(r)
     args = p.parse_args(argv)
@@ -363,8 +418,13 @@ def main(argv: Optional[List[str]] = None) -> int:
         args.claim_done = False
         args.promoted = ""
         args.not_promoted = ""
+        args.tracked_only = False
+        args.skip_if_clean = False
     if cmd == "hook-install":
         hook_install(args.app_root.resolve())
+        return 0
+    if cmd == "grok-hook-install":
+        grok_hook_install()
         return 0
     if cmd == "hook-run":
         return cmd_hook_run(args)

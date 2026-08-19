@@ -33,7 +33,7 @@ Override only when the user asks for a lower bar.
 1. In a git tree: fetch. If origin is ahead and the tree is clean, pull before editing. If origin is ahead and the tree is dirty: stash, commit, or report both; never discard or `reset --hard` to take the pull. If origin is not ahead and the tree is already edited: finish-later, do not discard.  
 2. Implement the change.  
 3. List all interaction paths (include prose surfaces when docs/strings change).  
-4. Check each path (tests, static review, scripts, written audit; docs: no decorative em dashes). Run `python3 ~/agent_laws_verify_before_done/vbd_gate.py check --app-root . --claim-done` with `--promoted` or `--not-promoted` before the report.  
+4. Check each path (tests, static review, scripts, written audit; docs: no decorative em dashes). The Grok Stop hook runs `vbd_gate` when you try to finish. Still run `python3 ~/agent_laws_verify_before_done/vbd_gate.py check --app-root . --claim-done` with `--promoted` or `--not-promoted` in the report. The user does not run this.  
 5. On failure, fix and recheck the full list. Promote general lessons to the VBD pack (`LESSONS.md`); do not leave them only in this repo. Skip when the lesson is unique to this product. Apply matching `LESSONS.md` rows on this change unless Skip-when matches.  
 6. Push completed work unless the user asked to hold it. If you do not push, the Git line must say why.  
 7. Report with the section below.  

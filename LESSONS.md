@@ -11,6 +11,6 @@ At the start of implement or UI work: apply every row whose **When** matches, un
 | 2026-08-18 | Phone-width (390x844) and desktop (~1280) for UI, layout, nav, or in-page jumps. Named command, not a thought. Skip/hash must land the **visual** target (the chart), not a tall section header. Martialsys boards: `python3 viewer/scripts/viewport_sanity.py`. | Any HTML/CSS/nav/anchor change | No UI (pure backend, data, or docs-only with no layout) |
 | 2026-08-16 | Fetch before edit. Dirty+ahead: stash, commit, or report both. Finish-later if local is edited and origin is not ahead. Push or say why. | Any git working tree | Not a git repo |
 | 2026-08-16 | Do not overwrite a newer deploy artifact with an older one. Missing source keeps dest. | Site, Pages, board JSON, wrangler | No public/deploy copy |
-| 2026-08-19 | Run `vbd_gate.py check` (and `hook-install` on product repos) so fetch, decorative dashes, and skip-to-chart cannot wait days to be noticed. `--claim-done` needs `--promoted` or `--not-promoted`. | Any finish / push / deploy | Not a git repo and no UI/docs change |
+| 2026-08-19 | `vbd_gate` is automatic: Grok Stop hook when the agent finishes a turn; git pre-push if the chat never claimed done. User does not run it by hand. | Any finish / push / deploy | Not a git repo and no tracked UI/docs change |
 
 Project-only scripts stay in that repo. Promote the **check**, not a one-off path, unless the same surface exists elsewhere.
