@@ -430,6 +430,83 @@ def grok_hook_install() -> None:
     print("installed {0}".format(dest))
 
 
+def is_vbd_pack(root: Path) -> bool:
+    return (
+        (root / "vbd_gate.py").is_file()
+        and (root / "VERIFY_BEFORE_DONE.md").is_file()
+        and (root / "AGENTS.md.drop-in").is_file()
+    )
+
+
+def graphforge_root() -> Optional[Path]:
+    env = os.environ.get("GRAPHFORGE_ROOT", "").strip()
+    p = Path(os.path.expanduser(env)) if env else Path.home() / "graphforge"
+    if (p / "scripts" / "sync_bundled_companions.py").is_file():
+        return p.resolve()
+    return None
+
+
+def publish_vbd_to_graphforge(vbd_root: Path) -> str:
+    """Copy this pack into private GraphForge and push. Operator PC distribution."""
+    if os.environ.get("VBD_SKIP_GF_PUBLISH", "").strip() in ("1", "true", "yes"):
+        print("publish-gf: skipped (VBD_SKIP_GF_PUBLISH)")
+        return "skipped"
+    gf = graphforge_root()
+    if gf is None:
+        print("publish-gf: no GraphForge checkout; skip")
+        return "skipped"
+    sync = gf / "scripts" / "sync_bundled_companions.py"
+    proc = subprocess.run(
+        [sys.executable, str(sync), "--vbd-root", str(vbd_root)],
+        cwd=str(gf),
+        capture_output=True,
+        text=True,
+    )
+    if proc.returncode != 0:
+        raise SystemExit(
+            "publish-gf: sync failed\n{0}{1}".format(proc.stdout or "", proc.stderr or "")
+        )
+    files = ["bundled/verify-before-done", "bundled/SOURCE.json", "bundled/README.md"]
+    subprocess.check_call(["git", "add", "--"] + files, cwd=str(gf))
+    quiet = subprocess.run(
+        ["git", "diff", "--cached", "--quiet", "--"] + files,
+        cwd=str(gf),
+    )
+    if quiet.returncode == 0:
+        print("publish-gf: GraphForge bundle already current")
+        return "unchanged"
+    sha = git_head(vbd_root) or "unknown"
+    env = os.environ.copy()
+    env["GIT_AUTHOR_NAME"] = "Martial Systems LLC"
+    env["GIT_AUTHOR_EMAIL"] = "25778085+martialsystems@users.noreply.github.com"
+    env["GIT_COMMITTER_NAME"] = env["GIT_AUTHOR_NAME"]
+    env["GIT_COMMITTER_EMAIL"] = env["GIT_AUTHOR_EMAIL"]
+    msg = "Refresh bundled VBD from pack @{0}.\n".format(sha)
+    subprocess.check_call(
+        ["git", "commit", "-m", msg, "--"] + files,
+        cwd=str(gf),
+        env=env,
+    )
+    push = subprocess.run(
+        ["git", "push", "origin", "HEAD"],
+        cwd=str(gf),
+        capture_output=True,
+        text=True,
+    )
+    if push.returncode != 0:
+        raise SystemExit(
+            "publish-gf: graphforge push failed\n{0}{1}".format(push.stdout or "", push.stderr or "")
+        )
+    print("publish-gf: pushed GraphForge bundle for VBD {0}".format(sha))
+    return "pushed"
+
+
+def maybe_publish_gf_after_vbd_push(root: Path) -> None:
+    if not is_vbd_pack(root):
+        return
+    publish_vbd_to_graphforge(root)
+
+
 def parse_hook_refs(text: str) -> List[Tuple[str, str]]:
     pairs: List[Tuple[str, str]] = []
     for line in text.splitlines():
@@ -514,6 +591,7 @@ def cmd_hook_run(args: argparse.Namespace) -> int:
         print("vbd_gate: push blocked. Fix the gates (or do not claim done).")
         return 2
     print("vbd_gate: PASS")
+    maybe_publish_gf_after_vbd_push(root)
     return 0
 
 
@@ -542,6 +620,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     h = sub.add_parser("hook-install", help="Install a pre-push hook in --app-root")
     with_root(h)
     sub.add_parser("grok-hook-install", help="Install the Grok Stop hook under ~/.grok/hooks")
+    pg = sub.add_parser("publish-gf", help="Sync this pack into private GraphForge and push")
+    with_root(pg)
     r = sub.add_parser("hook-run", help="Invoked by the pre-push hook")
     with_root(r)
     args = p.parse_args(argv)
@@ -562,6 +642,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 0
     if cmd == "hook-run":
         return cmd_hook_run(args)
+    if cmd == "publish-gf":
+        if not is_vbd_pack(args.app_root.resolve()):
+            print("publish-gf: --app-root is not a VBD pack", file=sys.stderr)
+            return 2
+        publish_vbd_to_graphforge(args.app_root.resolve())
+        return 0
     return cmd_check(args)
 
 

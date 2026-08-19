@@ -12,6 +12,9 @@ and [README.md](./README.md).
 - **2026-08-19:** First system note. Records quality bar vs interaction map,
   `vbd_gate`, Grok Stop hook, git pre-push, JSONL log, lesson promotion, host
   Pages publisher, and the boundary with GraphForge.
+- **2026-08-19:** After a passing VBD-pack `git push`, this operator PC syncs
+  and pushes the runner into private GraphForge (`publish-gf`). Public MIT
+  prose can remain; new runner bits ride the GF clone.
 
 ## 1. Object
 
@@ -103,7 +106,7 @@ The user does not run the gate by hand to close a chat.
 | Event | What runs |
 |-------|-----------|
 | Grok Stop (`end_turn`) | `vbd_stop_hook.py` via `~/.grok/hooks/vbd-stop.json`. Tracked-only, skip-if-clean. Blocks the stop once on failure (`stopHookActive` then allows, so finish-later dirt cannot loop eight times). Pre-push remains the ship backstop |
-| `git push` | `.git/hooks/pre-push` after `vbd_gate.py hook-install --app-root DIR` |
+| `git push` | `.git/hooks/pre-push` after `vbd_gate.py hook-install --app-root DIR`. If this repo is the VBD pack and `~/graphforge` exists, a passing pre-push also runs `publish-gf` (sync bundle, commit, push private GraphForge). `VBD_SKIP_GF_PUBLISH=1` skips |
 | Martialsys Pages deploy | `btc_15m_research/viewer/scripts/deploy_viewer.sh`: hard fail if `vbd_gate.py` is not found (`$VBD_GATE`, `$HOME/...`, `/root/...`, sibling clone). `--tracked-only` |
 
 Install Stop: `python3 vbd_gate.py grok-hook-install`.  

@@ -13,8 +13,10 @@ sys.path[:0] = [str(ROOT)]
 
 from vbd_gate import (  # noqa: E402
     dash_errors,
+    is_vbd_pack,
     log_path,
     main,
+    publish_vbd_to_graphforge,
     skip_landing_errors,
 )
 
@@ -185,3 +187,13 @@ def test_log_writes_pass_and_fail(tmp_path, monkeypatch):
     names = [g["name"] for g in recs[1]["gates"]]
     assert "dashes" in names
     assert log_path() == log
+
+
+def test_is_vbd_pack_on_this_repo():
+    assert is_vbd_pack(ROOT)
+    assert not is_vbd_pack(Path("/tmp"))
+
+
+def test_publish_gf_skipped_by_env(monkeypatch):
+    monkeypatch.setenv("VBD_SKIP_GF_PUBLISH", "1")
+    assert publish_vbd_to_graphforge(ROOT) == "skipped"
