@@ -25,7 +25,7 @@ Do not report fixed, done, shipped, or ready to try until:
 2. Implement the change.  
 3. Every interaction path for the change is listed (include prose surfaces and git). For UI, layout, nav, or in-page jumps: include phone-width (390x844) and desktop (~1280).  
 4. Each path is checked (tests, search, scripts, or written audit; docs scanned for decorative em dashes). Phone-width must be a named command (martialsys boards: `python3 viewer/scripts/viewport_sanity.py`), not a thought.
-5. The full list is rechecked after any fix  
+5. The full list is rechecked after any fix. Promote general lessons to the VBD pack (`LESSONS.md`); do not leave them only in this repo. Skip when the lesson is unique to this product.  
 6. Completed work is pushed unless the user asked to hold it. If you do not push, the Git line must say why.  
 7. The report section below is filled in  
 
@@ -41,6 +41,7 @@ Never force-push unless the user ordered it. Never `reset --hard` or discard fin
 - Verified: (path → method → pass/fail)
 - Bugs found in verify pass:
 - Git: fetched; origin ahead → pulled <sha> | no recent push; finish-later <paths> | pushed <ref@sha> | did not push: <reason> | not a git repo
+- Promoted: <lesson → LESSONS.md / pack> | not promoted: <why>
 - Residual risks:
 ```
 

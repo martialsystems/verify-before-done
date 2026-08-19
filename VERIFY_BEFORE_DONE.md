@@ -139,6 +139,7 @@ report only when the checklist passes, or residual risk is stated clearly
 - Verified: (path → method → pass/fail)
 - Bugs found in verify pass:
 - Git:
+- Promoted: <lesson → LESSONS.md / pack> | not promoted: <why>
 - Residual risks:
 ```
 
@@ -150,6 +151,23 @@ report only when the checklist passes, or residual risk is stated clearly
 - Did not push: `<reason>` (finish later, user hold, no remote, diverged, offline, secrets, tests failed)
 
 If a path could not be checked, list it under residual risks with a follow-up. Do not claim full completion.
+
+---
+
+## Promote general lessons
+
+Grok does not remember a project fix in the next session. Home-global files do.
+
+When a verify miss or a better default is **not unique to this repo** (viewport landing, fetch-first, stale deploy, punctuation, skip-to-visual-not-section):
+
+1. Apply matching rows in [LESSONS.md](./LESSONS.md) on this change (unless **Skip when** matches).  
+2. If the lesson is new, add a row to `LESSONS.md` and, if it is process law, to the drop-ins and the machine’s home Grok rule / skill copies.  
+3. Refresh GraphForge `bundled/verify-before-done` when that checkout exists.  
+4. Report `Promoted:`.  
+
+Do **not** promote: one product’s law, one market, one file, the user said this repo only, or the row already exists.
+
+Leaving a general lesson only in the repo that hit it is a failed verify pass.
 
 ---
 

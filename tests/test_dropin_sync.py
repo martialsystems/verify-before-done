@@ -22,6 +22,7 @@ REQUIRED = (
     "force-push",
     "Missing source",
     "390x844",
+    "promote general lessons",
 )
 
 
@@ -44,6 +45,7 @@ class DropinSyncTest(unittest.TestCase):
             "PASTE_BLOCK.txt",
             ".cursor-rules-example.mdc",
             "README.md",
+            "LESSONS.md",
         )
         offenders = []
         for name in dropins:
@@ -51,6 +53,12 @@ class DropinSyncTest(unittest.TestCase):
             if "\u2014" in text or "\u2013" in text:
                 offenders.append(name)
         self.assertEqual(offenders, [])
+
+    def test_lessons_catalog_has_phone_width(self) -> None:
+        text = (ROOT / "LESSONS.md").read_text(encoding="utf-8").lower()
+        self.assertIn("390x844", text)
+        self.assertIn("skip when", text)
+        self.assertIn("promote", text)
 
 
 if __name__ == "__main__":

@@ -34,7 +34,7 @@ Override only when the user asks for a lower bar.
 2. Implement the change.  
 3. List all interaction paths (include prose surfaces when docs/strings change).  
 4. Check each path (tests, static review, scripts, written audit; docs: no decorative em dashes).  
-5. On failure, fix and recheck the full list.  
+5. On failure, fix and recheck the full list. Promote general lessons to the VBD pack (`LESSONS.md`); do not leave them only in this repo. Skip when the lesson is unique to this product. Apply matching `LESSONS.md` rows on this change unless Skip-when matches.  
 6. Push completed work unless the user asked to hold it. If you do not push, the Git line must say why.  
 7. Report with the section below.  
 
@@ -58,6 +58,7 @@ Phone-width must be a named command (martialsys boards:
 - Implement on a local that is behind origin after a fetch was possible  
 - Leave finished work unpushed without saying why  
 - Treat unchecked paths as probably fine without naming residual risk  
+- Leave a general lesson only in the repo that hit it (promote general lessons)  
 - Never force-push unless the user ordered it  
 - `reset --hard` or discard finish-later work to make a pull easy  
 
@@ -70,6 +71,7 @@ Phone-width must be a named command (martialsys boards:
 - Verified: (path → method → pass/fail)
 - Bugs found in verify pass:
 - Git: fetched; origin ahead → pulled <sha> | no recent push; finish-later <paths> | pushed <ref@sha> | did not push: <reason> | not a git repo
+- Promoted: <lesson → LESSONS.md / pack> | not promoted: <why>
 - Residual risks:
 ```
 
@@ -79,7 +81,8 @@ Do not overwrite newer artifacts with older ones. Missing source keeps dest.
 Do not assume green CI means the public surface is current.  
 Do not change locked production or architecture only to refresh a stale public page.
 
-Full text: [VERIFY_BEFORE_DONE.md](./VERIFY_BEFORE_DONE.md).
+Full text: [VERIFY_BEFORE_DONE.md](./VERIFY_BEFORE_DONE.md).  
+Promoted cross-project defaults: [LESSONS.md](./LESSONS.md).
 
 ---
 

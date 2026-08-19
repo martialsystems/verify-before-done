@@ -26,6 +26,7 @@ This repository is a short set of rules you attach to a project or chat so the a
 2. Fetches git before editing; pulls if origin is ahead and clean; if dirty+ahead, stash, commit, or report both (never discard); treats dirty local with no new remote as finish-later  
 3. Lists every path that can hit the change (for UI: phone-width 390x844 and desktop ~1280, via a named command)  
 4. Checks each of them  
+5. Promotes general lessons to this pack (`LESSONS.md`) so the next project inherits them; skips when the lesson is unique to this product  
 5. After creating something, re-passes with the same rules and fixes bugs  
 6. Pushes completed work (or says why not)  
 7. Reports only after that  
@@ -54,6 +55,7 @@ There is nothing to install. Copy a markdown file into your tools.
 | Blank chat | [PASTE_BLOCK.txt](./PASTE_BLOCK.txt) |
 | Limited instruction space | [VERIFY_BEFORE_DONE.short.md](./VERIFY_BEFORE_DONE.short.md) |
 | Full project rules | [VERIFY_BEFORE_DONE.md](./VERIFY_BEFORE_DONE.md) |
+| Cross-project lessons | [LESSONS.md](./LESSONS.md) |
 | Cursor project rules | [.cursor-rules-example.mdc](./.cursor-rules-example.mdc) → `.cursor/rules/verify-before-done.mdc` |
 | Skills-compatible tools | [SKILL.md](./SKILL.md) |
 | Repo-level agent file | [AGENTS.md.drop-in](./AGENTS.md.drop-in) → `AGENTS.md` |

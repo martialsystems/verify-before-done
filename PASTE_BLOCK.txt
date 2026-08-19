@@ -23,7 +23,9 @@ For every code, config, UI, docs, or deploy change:
 4. Check each path (for docs: scan decorative em dashes). Phone-width
    must be a named command (martialsys boards:
    python3 viewer/scripts/viewport_sanity.py), not a thought.
-5. On failure, fix and recheck the full list.
+5. On failure, fix and recheck the full list. Promote general lessons
+   to the VBD pack (LESSONS.md). Do not leave them only in this repo.
+   Skip when the lesson is unique to this product.
 6. Push completed work unless the user asked to hold it
    (forgot-to-push default). If you do not push, say why on the Git line.
 7. Report only after the process is finished and the report is filled in.
@@ -50,6 +52,7 @@ Every final answer after a change must end with:
 - Verified: (path → method → pass/fail)
 - Bugs found in verify pass:
 - Git: fetched; origin ahead → pulled <sha> | no recent push; finish-later <paths> | pushed <ref@sha> | did not push: <reason> | not a git repo
+- Promoted: <lesson → LESSONS.md / pack> | not promoted: <why>
 - Residual risks:
 
 Confirm in one sentence that you will follow this, then continue.
