@@ -38,60 +38,72 @@ CHART_HINT = re.compile(r"(chart-wrap|chart_wrap)", re.I)
 
 
 class _SkipParser(HTMLParser):
+    """Collect every .skip-juicy hash href and whether each landing id is a chart wrap."""
+
     def __init__(self, skip_class: str) -> None:
         super().__init__()
         self.skip_class = skip_class
-        self.href: Optional[str] = None
+        self.hrefs: List[str] = []
+        self.targets: Dict[str, Tuple[bool, bool]] = {}
         self._stack: List[Tuple[str, Optional[str], Set[str]]] = []
-        self._skip_open = False
-        self.target_is_chart = False
-        self.target_contains_chart = False
-        self._in_target_depth = 0
-        self._target_id: Optional[str] = None
+        self._open_ids: List[Tuple[str, int]] = []
 
     def handle_starttag(self, tag: str, attrs: List[Tuple[str, Optional[str]]]) -> None:
         ad = {k: (v or "") for k, v in attrs}
         classes = set((ad.get("class") or "").split())
         eid = ad.get("id") or None
         self._stack.append((tag, eid, classes))
-        if tag == "a" and self.skip_class in classes and not self.href:
+        if tag == "a" and self.skip_class in classes:
             href = ad.get("href") or ""
             if href.startswith("#") and len(href) > 1:
-                self.href = href
-                self._target_id = href[1:]
-        if self._target_id and eid == self._target_id:
-            self._in_target_depth = 1
-            if "chart-wrap" in classes or CHART_HINT.search(ad.get("class") or ""):
-                self.target_is_chart = True
-        elif self._in_target_depth:
-            self._in_target_depth += 1
-            if "chart-wrap" in classes or tag == "canvas" or CHART_HINT.search(
-                (ad.get("class") or "") + " " + (eid or "")
-            ):
-                self.target_contains_chart = True
+                self.hrefs.append(href)
+        class_blob = ad.get("class") or ""
+        is_chart = "chart-wrap" in classes or bool(CHART_HINT.search(class_blob))
+        is_visual = is_chart or tag == "canvas" or bool(
+            CHART_HINT.search(class_blob + " " + (eid or ""))
+        )
+        if eid:
+            was_chart, was_contains = self.targets.get(eid, (False, False))
+            self.targets[eid] = (was_chart or is_chart, was_contains)
+            self._open_ids.append((eid, len(self._stack)))
+        if is_visual:
+            for tid, _depth in self._open_ids:
+                is_chart_tid, contains_tid = self.targets.get(tid, (False, False))
+                if eid == tid and is_chart:
+                    self.targets[tid] = (True, contains_tid)
+                else:
+                    self.targets[tid] = (is_chart_tid, True)
 
     def handle_endtag(self, tag: str) -> None:
-        if self._in_target_depth:
-            self._in_target_depth -= 1
         if self._stack:
             self._stack.pop()
+        depth = len(self._stack)
+        self._open_ids = [(tid, d) for tid, d in self._open_ids if d <= depth]
 
 
 def skip_landing_errors(html: str) -> List[str]:
-    """Fail if a skip jump lands on a section that *contains* the chart."""
+    """Fail if any skip jump lands on a section that *contains* the chart."""
     p = _SkipParser(SKIP_CLASS)
     try:
         p.feed(html)
     except Exception as exc:
         return ["html parse failed: {0}".format(exc)]
-    if not p.href:
-        return []
-    if p.target_contains_chart and not p.target_is_chart:
-        return [
-            "skip {0} lands on a section that contains a chart; "
-            "point href at the visual target (the chart wrap), not the panel".format(p.href)
-        ]
-    return []
+    errs: List[str] = []
+    seen: Set[str] = set()
+    for href in p.hrefs:
+        if href in seen:
+            continue
+        seen.add(href)
+        meta = p.targets.get(href[1:])
+        if not meta:
+            continue
+        is_chart, contains_chart = meta
+        if contains_chart and not is_chart:
+            errs.append(
+                "skip {0} lands on a section that contains a chart; "
+                "point href at the visual target (the chart wrap), not the panel".format(href)
+            )
+    return errs
 
 
 def _git(root: Path, args: Sequence[str], check: bool = False) -> subprocess.CompletedProcess:

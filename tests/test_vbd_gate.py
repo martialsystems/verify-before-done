@@ -52,6 +52,33 @@ def test_no_skip_control_ok():
     assert skip_landing_errors("<p>no skip</p>") == []
 
 
+def test_skip_evaluates_every_hash_not_only_first():
+    html = """
+    <a class="skip-juicy" href="#chart">skip chart</a>
+    <a class="skip-juicy" href="#panel">skip panel</a>
+    <section id="panel" class="panel">
+      <div class="chart-wrap" id="chart"></div>
+    </section>
+    """
+    errs = skip_landing_errors(html)
+    assert errs
+    assert any("#panel" in e for e in errs)
+    assert not any("#chart" in e for e in errs)
+
+
+def test_skip_two_panels_both_fail():
+    html = """
+    <a class="skip-juicy" href="#panel-a">a</a>
+    <a class="skip-juicy" href="#panel-b">b</a>
+    <section id="panel-a"><div class="chart-wrap" id="chart-a"></div></section>
+    <section id="panel-b"><div class="chart-wrap" id="chart-b"></div></section>
+    """
+    errs = skip_landing_errors(html)
+    assert len(errs) == 2
+    assert any("#panel-a" in e for e in errs)
+    assert any("#panel-b" in e for e in errs)
+
+
 def test_dash_errors_on_md(tmp_path: Path):
     p = tmp_path / "NOTE.md"
     p.write_text("Channels — named slots\n", encoding="utf-8")
