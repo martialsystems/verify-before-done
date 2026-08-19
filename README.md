@@ -4,6 +4,8 @@
 
 # Verify Before Done
 
+Current system (research register, 2026-08-19): [SYSTEM.md](./SYSTEM.md).
+
 Instructions for coding assistants: apply a high quality bar, check every path that can touch a change, pass over new work with the same rules, and fix bugs before reporting that the work is finished.
 
 Copyright (c) 2026 Martial Systems LLC. MIT license: see [LICENSE](./LICENSE).
@@ -109,6 +111,7 @@ Every completion report must include:
 - Verified: (path → method → pass/fail)
 - Bugs found in verify pass:
 - Git:
+- Promoted: <lesson → LESSONS.md / pack> | not promoted: <why>
 - Residual risks:
 ```
 
@@ -118,6 +121,7 @@ Every completion report must include:
 
 | File | Role |
 |------|------|
+| [SYSTEM.md](./SYSTEM.md) | Research-register description of the pack as implemented (2026-08-19) |
 | [VERIFY_BEFORE_DONE.md](./VERIFY_BEFORE_DONE.md) | Full rule set (quality defaults + verify process) |
 | [VERIFY_BEFORE_DONE.short.md](./VERIFY_BEFORE_DONE.short.md) | Condensed rule set |
 | [PASTE_BLOCK.txt](./PASTE_BLOCK.txt) | Single paste for a new chat |

@@ -47,6 +47,7 @@ class DropinSyncTest(unittest.TestCase):
             ".cursor-rules-example.mdc",
             "README.md",
             "LESSONS.md",
+            "SYSTEM.md",
         )
         offenders = []
         for name in dropins:
