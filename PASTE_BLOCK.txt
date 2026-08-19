@@ -23,6 +23,8 @@ For every code, config, UI, docs, or deploy change:
 4. Check each path (for docs: scan decorative em dashes). Phone-width
    must be a named command (martialsys boards:
    python3 viewer/scripts/viewport_sanity.py), not a thought.
+   Run vbd_gate.py check --claim-done so fetch, dashes, and
+   skip-landing cannot be forgotten.
 5. On failure, fix and recheck the full list. Promote general lessons
    to the VBD pack (LESSONS.md). Do not leave them only in this repo.
    Skip when the lesson is unique to this product.

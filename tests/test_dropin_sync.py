@@ -23,6 +23,7 @@ REQUIRED = (
     "Missing source",
     "390x844",
     "promote general lessons",
+    "vbd_gate",
 )
 
 

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Copyright (c) 2026 Martial Systems LLC. MIT.
+set -euo pipefail
+ROOT="$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)"
+exec python3 "$ROOT/vbd_gate.py" "$@"

@@ -1,0 +1,375 @@
+#!/usr/bin/env python3
+# Copyright (c) 2026 Martial Systems LLC. MIT.
+"""Verify-before-done gates: checks an agent (or you) can forget.
+
+Prose VBD cannot see a phone or remember to fetch. This command fails closed
+on the repeatable misses. Judgment (quality bar, honest residuals) stays prose.
+
+  python3 vbd_gate.py check --app-root DIR
+  python3 vbd_gate.py check --app-root DIR --claim-done --not-promoted 'unique to this product'
+  python3 vbd_gate.py hook-install --app-root DIR
+
+Exit 0 pass, 2 fail. Does not discard local work. Does not pull.
+"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import re
+import stat
+import subprocess
+import sys
+from html.parser import HTMLParser
+from pathlib import Path
+from typing import Iterable, List, Optional, Sequence, Set, Tuple
+
+PACK_ROOT = Path(__file__).resolve().parent
+HOOK_MARK = "vbd-gate-pre-push"
+DASH_CHARS = ("\u2014", "\u2013")
+UI_SUFFIX = {".html", ".css"}
+PROSE_SUFFIX = {".md", ".txt", ".html"}
+DASH_ALLOW = {"VERIFY_BEFORE_DONE.md"}
+SKIP_CLASS = "skip-juicy"
+CHART_HINT = re.compile(r"(chart-wrap|chart_wrap)", re.I)
+
+
+class _SkipParser(HTMLParser):
+    def __init__(self, skip_class: str) -> None:
+        super().__init__()
+        self.skip_class = skip_class
+        self.href: Optional[str] = None
+        self._stack: List[Tuple[str, Optional[str], Set[str]]] = []
+        self._skip_open = False
+        self.target_is_chart = False
+        self.target_contains_chart = False
+        self._in_target_depth = 0
+        self._target_id: Optional[str] = None
+
+    def handle_starttag(self, tag: str, attrs: List[Tuple[str, Optional[str]]]) -> None:
+        ad = {k: (v or "") for k, v in attrs}
+        classes = set((ad.get("class") or "").split())
+        eid = ad.get("id") or None
+        self._stack.append((tag, eid, classes))
+        if tag == "a" and self.skip_class in classes and not self.href:
+            href = ad.get("href") or ""
+            if href.startswith("#") and len(href) > 1:
+                self.href = href
+                self._target_id = href[1:]
+        if self._target_id and eid == self._target_id:
+            self._in_target_depth = 1
+            if "chart-wrap" in classes or CHART_HINT.search(ad.get("class") or ""):
+                self.target_is_chart = True
+        elif self._in_target_depth:
+            self._in_target_depth += 1
+            if "chart-wrap" in classes or tag == "canvas" or CHART_HINT.search(
+                (ad.get("class") or "") + " " + (eid or "")
+            ):
+                self.target_contains_chart = True
+
+    def handle_endtag(self, tag: str) -> None:
+        if self._in_target_depth:
+            self._in_target_depth -= 1
+        if self._stack:
+            self._stack.pop()
+
+
+def skip_landing_errors(html: str) -> List[str]:
+    """Fail if a skip jump lands on a section that *contains* the chart."""
+    p = _SkipParser(SKIP_CLASS)
+    try:
+        p.feed(html)
+    except Exception as exc:
+        return ["html parse failed: {0}".format(exc)]
+    if not p.href:
+        return []
+    if p.target_contains_chart and not p.target_is_chart:
+        return [
+            "skip {0} lands on a section that contains a chart; "
+            "point href at the visual target (the chart wrap), not the panel".format(p.href)
+        ]
+    return []
+
+
+def _git(root: Path, args: Sequence[str], check: bool = False) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        ["git", *args],
+        cwd=str(root),
+        capture_output=True,
+        text=True,
+        check=check,
+    )
+
+
+def is_git(root: Path) -> bool:
+    return (root / ".git").exists() or _git(root, ["rev-parse", "--is-inside-work-tree"]).returncode == 0
+
+
+def git_fetch(root: Path) -> Optional[str]:
+    proc = _git(root, ["fetch"])
+    if proc.returncode != 0:
+        err = (proc.stderr or proc.stdout or "").strip()
+        if "No remote" in err or "does not appear to be a git repository" in err:
+            return None
+        return "git fetch failed: {0}".format(err or proc.returncode)
+    return None
+
+
+def origin_ahead_errors(root: Path) -> List[str]:
+    up = _git(root, ["rev-parse", "--abbrev-ref", "@{upstream}"])
+    if up.returncode != 0:
+        return []
+    counts = _git(root, ["rev-list", "--left-right", "--count", "HEAD...@{upstream}"])
+    if counts.returncode != 0:
+        return []
+    parts = (counts.stdout or "0\t0").strip().split()
+    behind = int(parts[1]) if len(parts) > 1 else 0
+    if behind <= 0:
+        return []
+    dirty = _git(root, ["status", "--porcelain"])
+    dirty_n = len([ln for ln in (dirty.stdout or "").splitlines() if ln.strip()])
+    if dirty_n:
+        return [
+            "origin is ahead ({0} commit(s)) and the tree is dirty; "
+            "stash, commit, or report both; do not discard or reset --hard".format(behind)
+        ]
+    return [
+        "origin is ahead ({0} commit(s)) and the tree is clean; pull before claiming done".format(
+            behind
+        )
+    ]
+
+
+def changed_paths(root: Path, *, from_ref: Optional[str] = None, to_ref: Optional[str] = None) -> List[Path]:
+    names: Set[str] = set()
+    if from_ref and to_ref and to_ref != "0" * 40:
+        if from_ref == "0" * 40:
+            diff = _git(root, ["diff", "--name-only", to_ref])
+        else:
+            diff = _git(root, ["diff", "--name-only", from_ref, to_ref])
+        names.update(ln.strip() for ln in (diff.stdout or "").splitlines() if ln.strip())
+    else:
+        for args in (
+            ["diff", "--name-only", "HEAD"],
+            ["diff", "--cached", "--name-only"],
+            ["ls-files", "--others", "--exclude-standard"],
+        ):
+            proc = _git(root, args)
+            names.update(ln.strip() for ln in (proc.stdout or "").splitlines() if ln.strip())
+    out: List[Path] = []
+    for n in sorted(names):
+        p = root / n
+        if p.is_file():
+            out.append(p)
+    return out
+
+
+def dash_errors(paths: Iterable[Path]) -> List[str]:
+    errs: List[str] = []
+    for p in paths:
+        if p.suffix.lower() not in PROSE_SUFFIX:
+            continue
+        if p.name in DASH_ALLOW:
+            continue
+        try:
+            text = p.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        if any(ch in text for ch in DASH_CHARS):
+            errs.append("{0}: decorative em/en dash".format(p))
+    return errs
+
+
+def ui_errors(root: Path, paths: Iterable[Path]) -> List[str]:
+    paths = list(paths)
+    ui = [p for p in paths if p.suffix.lower() in UI_SUFFIX]
+    if not ui:
+        return []
+    errs: List[str] = []
+    for p in ui:
+        if p.suffix.lower() != ".html":
+            continue
+        try:
+            html = p.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        for e in skip_landing_errors(html):
+            errs.append("{0}: {1}".format(p, e))
+    vs = root / "viewer" / "scripts" / "viewport_sanity.py"
+    if vs.is_file():
+        proc = subprocess.run(
+            [sys.executable, str(vs)],
+            cwd=str(root),
+            capture_output=True,
+            text=True,
+        )
+        if proc.returncode != 0:
+            tail = ((proc.stdout or "") + (proc.stderr or "")).strip().splitlines()
+            errs.append(
+                "viewport_sanity exit {0}: {1}".format(
+                    proc.returncode, " | ".join(tail[-5:]) or "no output"
+                )
+            )
+    elif any(p.suffix.lower() == ".html" for p in ui) and not errs:
+        # No project runner. Portable skip check already ran. Note only if HTML
+        # changed and there was a skip control that passed.
+        pass
+    return errs
+
+
+def run_checks(
+    root: Path,
+    *,
+    from_ref: Optional[str] = None,
+    to_ref: Optional[str] = None,
+    do_fetch: bool = True,
+) -> List[str]:
+    errs: List[str] = []
+    if not is_git(root):
+        return errs
+    if do_fetch:
+        fe = git_fetch(root)
+        if fe:
+            errs.append(fe)
+            return errs
+        errs.extend(origin_ahead_errors(root))
+    paths = changed_paths(root, from_ref=from_ref, to_ref=to_ref)
+    errs.extend(dash_errors(paths))
+    errs.extend(ui_errors(root, paths))
+    return errs
+
+
+def hook_script(gate_path: Path) -> str:
+    return (
+        "#!/bin/sh\n"
+        "# {0}\n"
+        "set -e\n"
+        "GATE=\"${{VBD_GATE:-{1}}}\"\n"
+        "if [ ! -f \"$GATE\" ]; then\n"
+        "  echo \"vbd_gate: missing $GATE\" >&2\n"
+        "  exit 2\n"
+        "fi\n"
+        "exec python3 \"$GATE\" hook-run --app-root \"$(git rev-parse --show-toplevel)\"\n"
+    ).format(HOOK_MARK, gate_path)
+
+
+def hook_install(root: Path) -> None:
+    hook_dir = root / ".git" / "hooks"
+    if not hook_dir.is_dir():
+        # gitdir file (worktree) or missing
+        gitdir = _git(root, ["rev-parse", "--git-path", "hooks"])
+        if gitdir.returncode != 0:
+            raise SystemExit("hook-install: not a git repo: {0}".format(root))
+        hook_dir = Path(gitdir.stdout.strip())
+        if not hook_dir.is_absolute():
+            hook_dir = root / hook_dir
+        hook_dir.mkdir(parents=True, exist_ok=True)
+    path = hook_dir / "pre-push"
+    body = hook_script(PACK_ROOT / "vbd_gate.py")
+    if path.is_file():
+        old = path.read_text(encoding="utf-8")
+        if HOOK_MARK not in old and old.strip():
+            raise SystemExit(
+                "hook-install: {0} exists and is not a VBD hook; "
+                "leave it (finish-later). Install by hand if you want both.".format(path)
+            )
+    path.write_text(body, encoding="utf-8")
+    path.chmod(path.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    print("installed {0}".format(path))
+
+
+def parse_hook_refs(text: str) -> List[Tuple[str, str]]:
+    pairs: List[Tuple[str, str]] = []
+    for line in text.splitlines():
+        parts = line.split()
+        if len(parts) < 4:
+            continue
+        local_sha, remote_sha = parts[1], parts[3]
+        pairs.append((remote_sha, local_sha))
+    return pairs
+
+
+def cmd_check(args: argparse.Namespace) -> int:
+    root = args.app_root.resolve()
+    print("=== vbd_gate check {0} ===".format(root))
+    errs = run_checks(root)
+    if args.claim_done:
+        if not (args.promoted or args.not_promoted):
+            errs.append(
+                "--claim-done requires --promoted <lesson> or "
+                "--not-promoted <why> (unique to this product / already in LESSONS.md)"
+            )
+        elif args.promoted:
+            print("  promoted: {0}".format(args.promoted))
+        else:
+            print("  not promoted: {0}".format(args.not_promoted))
+    if errs:
+        for e in errs:
+            print("  [FAIL] {0}".format(e))
+        return 2
+    print("vbd_gate: PASS")
+    return 0
+
+
+def cmd_hook_run(args: argparse.Namespace) -> int:
+    root = args.app_root.resolve()
+    stdin = sys.stdin.read() if not sys.stdin.isatty() else ""
+    pairs = parse_hook_refs(stdin)
+    print("=== vbd_gate pre-push {0} ===".format(root))
+    errs: List[str] = []
+    fe = git_fetch(root)
+    if fe:
+        print("  [FAIL] {0}".format(fe))
+        return 2
+    errs.extend(origin_ahead_errors(root))
+    if pairs:
+        for remote_sha, local_sha in pairs:
+            if local_sha == "0" * 40:
+                continue
+            errs.extend(run_checks(root, from_ref=remote_sha, to_ref=local_sha, do_fetch=False))
+    else:
+        # stdin empty (manual); scan working tree
+        errs.extend(run_checks(root, do_fetch=False))
+    if errs:
+        for e in errs:
+            print("  [FAIL] {0}".format(e))
+        print("vbd_gate: push blocked. Fix the gates (or do not claim done).")
+        return 2
+    print("vbd_gate: PASS")
+    return 0
+
+
+def main(argv: Optional[List[str]] = None) -> int:
+    p = argparse.ArgumentParser(description=__doc__)
+    sub = p.add_subparsers(dest="cmd")
+
+    def with_root(sp: argparse.ArgumentParser) -> None:
+        sp.add_argument("--app-root", type=Path, default=Path("."))
+
+    c = sub.add_parser("check", help="Run gates on the working tree")
+    with_root(c)
+    c.add_argument("--claim-done", action="store_true")
+    c.add_argument("--promoted", default="")
+    c.add_argument("--not-promoted", default="")
+    h = sub.add_parser("hook-install", help="Install a pre-push hook in --app-root")
+    with_root(h)
+    r = sub.add_parser("hook-run", help="Invoked by the pre-push hook")
+    with_root(r)
+    args = p.parse_args(argv)
+    cmd = args.cmd or "check"
+    if not hasattr(args, "app_root"):
+        args.app_root = Path(".")
+    if cmd == "check" and not hasattr(args, "claim_done"):
+        args.claim_done = False
+        args.promoted = ""
+        args.not_promoted = ""
+    if cmd == "hook-install":
+        hook_install(args.app_root.resolve())
+        return 0
+    if cmd == "hook-run":
+        return cmd_hook_run(args)
+    return cmd_check(args)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

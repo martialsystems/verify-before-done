@@ -114,6 +114,7 @@ Use more than one method when the change is risky:
 - Confirm prior behavior still works when the feature is off or empty  
 - When UI cannot be observed: compare data (payloads, attributes, hashes, HTTP bodies)  
 - For UI / layout / nav / hash jumps: run a phone-width (390x844) and desktop (~1280) command (martialsys boards: `python3 viewer/scripts/viewport_sanity.py`). Name that command in the report. If none ran, residual risk; do not claim full completion.  
+- Before claiming done, run the forgettable gates: `python3 vbd_gate.py check --app-root <repo> --claim-done` with `--promoted` or `--not-promoted`. Pre-push: `python3 vbd_gate.py hook-install --app-root <repo>`.  
 - For docs/prose: search for decorative `—` / dash-asides; fix to colons or cut-off-only em dashes  
 - For git: `git fetch`, then compare to `@{upstream}` (or `origin/HEAD`); pull if behind; do not treat an unfetched local as current  
 

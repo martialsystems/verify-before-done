@@ -27,11 +27,18 @@ This repository is a short set of rules you attach to a project or chat so the a
 3. Lists every path that can hit the change (for UI: phone-width 390x844 and desktop ~1280, via a named command)  
 4. Checks each of them  
 5. Promotes general lessons to this pack (`LESSONS.md`) so the next project inherits them; skips when the lesson is unique to this product  
-5. After creating something, re-passes with the same rules and fixes bugs  
-6. Pushes completed work (or says why not)  
-7. Reports only after that  
+6. After creating something, re-passes with the same rules and fixes bugs  
+7. Pushes completed work (or says why not)  
+8. Reports only after that; `vbd_gate.py check --claim-done` must have passed  
 
-There is nothing to install. Copy a markdown file into your tools.
+Rules still go in the chat. The **forgettable** checks are a command:
+
+```bash
+python3 vbd_gate.py check --app-root ~/your_product --claim-done --not-promoted 'unique to this product'
+python3 vbd_gate.py hook-install --app-root ~/your_product
+```
+
+`vbd_gate` fetches, refuses origin-ahead+dirty (does not discard), scans changed docs for decorative dashes, and fails a skip jump that lands on a panel instead of the chart. Pre-push runs the same gates so a forgotten check blocks the push.
 
 **Hardwiring into all chats:** put the short rule or [PASTE_BLOCK.txt](./PASTE_BLOCK.txt) into your tool’s always-on instructions (custom instructions, user rules, project rules with always-apply, or a root [AGENTS.md](./AGENTS.md.drop-in)). That way every new chat inherits the process without re-pasting. This is still a rule the host injects, not a plugin: the model can ignore it, but most tools will load it on every session once it is set there.
 
@@ -59,6 +66,7 @@ There is nothing to install. Copy a markdown file into your tools.
 | Cursor project rules | [.cursor-rules-example.mdc](./.cursor-rules-example.mdc) → `.cursor/rules/verify-before-done.mdc` |
 | Skills-compatible tools | [SKILL.md](./SKILL.md) |
 | Repo-level agent file | [AGENTS.md.drop-in](./AGENTS.md.drop-in) → `AGENTS.md` |
+| Forgettable gates | [vbd_gate.py](./vbd_gate.py) / `bin/vbd` |
 
 Session line (optional):
 
