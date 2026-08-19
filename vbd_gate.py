@@ -9,6 +9,7 @@ on the repeatable misses. Judgment (quality bar, honest residuals) stays prose.
   python3 vbd_gate.py check --app-root DIR --claim-done --not-promoted 'unique to this product'
   python3 vbd_gate.py hook-install --app-root DIR
 
+Each run appends one JSON line to ~/.grok/logs/vbd_gate.jsonl (VBD_GATE_LOG).
 Exit 0 pass, 2 fail. Does not discard local work. Does not pull.
 """
 
@@ -21,9 +22,10 @@ import re
 import stat
 import subprocess
 import sys
+from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
-from typing import Iterable, List, Optional, Sequence, Set, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
 PACK_ROOT = Path(__file__).resolve().parent
 HOOK_MARK = "vbd-gate-pre-push"
@@ -189,13 +191,9 @@ def dash_errors(paths: Iterable[Path]) -> List[str]:
     return errs
 
 
-def ui_errors(root: Path, paths: Iterable[Path]) -> List[str]:
-    paths = list(paths)
-    ui = [p for p in paths if p.suffix.lower() in UI_SUFFIX]
-    if not ui:
-        return []
+def skip_path_errors(paths: Iterable[Path]) -> List[str]:
     errs: List[str] = []
-    for p in ui:
+    for p in paths:
         if p.suffix.lower() != ".html":
             continue
         try:
@@ -204,26 +202,84 @@ def ui_errors(root: Path, paths: Iterable[Path]) -> List[str]:
             continue
         for e in skip_landing_errors(html):
             errs.append("{0}: {1}".format(p, e))
-    vs = root / "viewer" / "scripts" / "viewport_sanity.py"
-    if vs.is_file():
-        proc = subprocess.run(
-            [sys.executable, str(vs)],
-            cwd=str(root),
-            capture_output=True,
-            text=True,
-        )
-        if proc.returncode != 0:
-            tail = ((proc.stdout or "") + (proc.stderr or "")).strip().splitlines()
-            errs.append(
-                "viewport_sanity exit {0}: {1}".format(
-                    proc.returncode, " | ".join(tail[-5:]) or "no output"
-                )
-            )
-    elif any(p.suffix.lower() == ".html" for p in ui) and not errs:
-        # No project runner. Portable skip check already ran. Note only if HTML
-        # changed and there was a skip control that passed.
-        pass
     return errs
+
+
+def viewport_errors(root: Path, paths: Iterable[Path]) -> List[str]:
+    ui = [p for p in paths if p.suffix.lower() in UI_SUFFIX]
+    if not ui:
+        return []
+    vs = root / "viewer" / "scripts" / "viewport_sanity.py"
+    if not vs.is_file():
+        return []
+    proc = subprocess.run(
+        [sys.executable, str(vs)],
+        cwd=str(root),
+        capture_output=True,
+        text=True,
+    )
+    if proc.returncode == 0:
+        return []
+    tail = ((proc.stdout or "") + (proc.stderr or "")).strip().splitlines()
+    return [
+        "viewport_sanity exit {0}: {1}".format(
+            proc.returncode, " | ".join(tail[-5:]) or "no output"
+        )
+    ]
+
+
+def _gate(name: str, errs: List[str], *, skipped: bool = False, detail: str = "") -> Dict[str, Any]:
+    rec: Dict[str, Any] = {"name": name, "ok": not errs, "detail": detail or "; ".join(errs)}
+    if skipped:
+        rec["skipped"] = True
+        rec["ok"] = True
+    return rec
+
+
+def log_path() -> Path:
+    env = os.environ.get("VBD_GATE_LOG", "").strip()
+    if env:
+        return Path(os.path.expanduser(env))
+    return Path.home() / ".grok" / "logs" / "vbd_gate.jsonl"
+
+
+def git_head(root: Path) -> Optional[str]:
+    proc = _git(root, ["rev-parse", "HEAD"])
+    if proc.returncode != 0:
+        return None
+    return (proc.stdout or "").strip() or None
+
+
+def append_log(record: Dict[str, Any]) -> None:
+    """Best-effort. A full disk must not change the gate result."""
+    try:
+        path = log_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps(record, ensure_ascii=True, default=str) + "\n")
+    except OSError as exc:
+        print("vbd_gate: log write failed: {0}".format(exc), file=sys.stderr)
+
+
+def emit_log(
+    *,
+    event: str,
+    root: Path,
+    errs: List[str],
+    gates: List[Dict[str, Any]],
+    promoted: Optional[str] = None,
+) -> None:
+    append_log(
+        {
+            "ts": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "event": event,
+            "cwd": str(root),
+            "ok": not errs,
+            "gates": gates,
+            "promoted": promoted,
+            "git_head": git_head(root) if is_git(root) else None,
+        }
+    )
 
 
 def run_checks(
@@ -234,24 +290,46 @@ def run_checks(
     do_fetch: bool = True,
     tracked_only: bool = False,
     skip_if_clean: bool = False,
-) -> List[str]:
+) -> Tuple[List[str], List[Dict[str, Any]]]:
+    gates: List[Dict[str, Any]] = []
     errs: List[str] = []
     if not is_git(root):
-        return errs
+        gates.append(_gate("git", [], skipped=True, detail="not a git repo"))
+        return errs, gates
     paths = changed_paths(
         root, from_ref=from_ref, to_ref=to_ref, tracked_only=tracked_only
     )
     if skip_if_clean and not paths:
-        return []
+        gates.append(_gate("skip_if_clean", [], skipped=True, detail="no changed files"))
+        return errs, gates
     if do_fetch:
         fe = git_fetch(root)
         if fe:
-            errs.append(fe)
-            return errs
-        errs.extend(origin_ahead_errors(root))
-    errs.extend(dash_errors(paths))
-    errs.extend(ui_errors(root, paths))
-    return errs
+            gates.append(_gate("fetch", [fe]))
+            return [fe], gates
+        gates.append(_gate("fetch", []))
+        oa = origin_ahead_errors(root)
+        gates.append(_gate("origin_ahead", oa))
+        errs.extend(oa)
+    else:
+        gates.append(_gate("fetch", [], skipped=True, detail="not requested"))
+    de = dash_errors(paths)
+    gates.append(_gate("dashes", de))
+    errs.extend(de)
+    se = skip_path_errors(paths)
+    gates.append(_gate("skip_landing", se))
+    errs.extend(se)
+    ve = viewport_errors(root, paths)
+    ui = [p for p in paths if p.suffix.lower() in UI_SUFFIX]
+    vs = root / "viewer" / "scripts" / "viewport_sanity.py"
+    if not ui:
+        gates.append(_gate("viewport_sanity", [], skipped=True, detail="no html/css in change set"))
+    elif not vs.is_file():
+        gates.append(_gate("viewport_sanity", [], skipped=True, detail="no viewer/scripts/viewport_sanity.py"))
+    else:
+        gates.append(_gate("viewport_sanity", ve))
+        errs.extend(ve)
+    return errs, gates
 
 
 def hook_script(gate_path: Path) -> str:
@@ -332,21 +410,31 @@ def parse_hook_refs(text: str) -> List[Tuple[str, str]]:
 def cmd_check(args: argparse.Namespace) -> int:
     root = args.app_root.resolve()
     print("=== vbd_gate check {0} ===".format(root))
-    errs = run_checks(
+    errs, gates = run_checks(
         root,
         tracked_only=bool(getattr(args, "tracked_only", False)),
         skip_if_clean=bool(getattr(args, "skip_if_clean", False)),
     )
+    promoted: Optional[str] = None
+    event = "check"
     if args.claim_done:
+        event = "claim-done"
         if not (args.promoted or args.not_promoted):
-            errs.append(
+            msg = (
                 "--claim-done requires --promoted <lesson> or "
                 "--not-promoted <why> (unique to this product / already in LESSONS.md)"
             )
+            errs.append(msg)
+            gates.append(_gate("claim_done", [msg]))
         elif args.promoted:
+            promoted = args.promoted
             print("  promoted: {0}".format(args.promoted))
+            gates.append(_gate("claim_done", []))
         else:
+            promoted = "not promoted: {0}".format(args.not_promoted)
             print("  not promoted: {0}".format(args.not_promoted))
+            gates.append(_gate("claim_done", []))
+    emit_log(event=event, root=root, errs=errs, gates=gates, promoted=promoted)
     if errs:
         for e in errs:
             print("  [FAIL] {0}".format(e))
@@ -361,19 +449,31 @@ def cmd_hook_run(args: argparse.Namespace) -> int:
     pairs = parse_hook_refs(stdin)
     print("=== vbd_gate pre-push {0} ===".format(root))
     errs: List[str] = []
+    gates: List[Dict[str, Any]] = []
     fe = git_fetch(root)
     if fe:
+        gates.append(_gate("fetch", [fe]))
+        emit_log(event="pre-push", root=root, errs=[fe], gates=gates)
         print("  [FAIL] {0}".format(fe))
         return 2
-    errs.extend(origin_ahead_errors(root))
+    gates.append(_gate("fetch", []))
+    oa = origin_ahead_errors(root)
+    gates.append(_gate("origin_ahead", oa))
+    errs.extend(oa)
     if pairs:
         for remote_sha, local_sha in pairs:
             if local_sha == "0" * 40:
                 continue
-            errs.extend(run_checks(root, from_ref=remote_sha, to_ref=local_sha, do_fetch=False))
+            more, more_gates = run_checks(
+                root, from_ref=remote_sha, to_ref=local_sha, do_fetch=False
+            )
+            errs.extend(more)
+            gates.extend(more_gates)
     else:
-        # stdin empty (manual); scan working tree
-        errs.extend(run_checks(root, do_fetch=False))
+        more, more_gates = run_checks(root, do_fetch=False)
+        errs.extend(more)
+        gates.extend(more_gates)
+    emit_log(event="pre-push", root=root, errs=errs, gates=gates)
     if errs:
         for e in errs:
             print("  [FAIL] {0}".format(e))

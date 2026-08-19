@@ -48,6 +48,12 @@ python3 vbd_gate.py check --app-root ~/your_product --claim-done --not-promoted 
 
 `vbd_gate` fetches, refuses origin-ahead+dirty (does not discard), scans changed docs for decorative dashes, and fails a skip jump that lands on a panel instead of the chart. Pre-push runs the same gates so a forgotten check blocks the push.
 
+Each run appends one JSON line to `~/.grok/logs/vbd_gate.jsonl` (override `VBD_GATE_LOG`). That is command evidence (fetch, dashes, skip, viewport), not the interaction-map essay.
+
+```bash
+tail -n 20 ~/.grok/logs/vbd_gate.jsonl
+```
+
 **Hardwiring into all chats:** put the short rule or [PASTE_BLOCK.txt](./PASTE_BLOCK.txt) into your tool’s always-on instructions (custom instructions, user rules, project rules with always-apply, or a root [AGENTS.md](./AGENTS.md.drop-in)). That way every new chat inherits the process without re-pasting. This is still a rule the host injects, not a plugin: the model can ignore it, but most tools will load it on every session once it is set there.
 
 ---

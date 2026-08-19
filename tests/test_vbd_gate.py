@@ -1,18 +1,27 @@
 # Copyright (c) 2026 Martial Systems LLC. MIT.
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 from pathlib import Path
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT)]
 
 from vbd_gate import (  # noqa: E402
     dash_errors,
+    log_path,
     main,
     skip_landing_errors,
 )
+
+
+@pytest.fixture(autouse=True)
+def _isolate_vbd_log(tmp_path, monkeypatch):
+    monkeypatch.setenv("VBD_GATE_LOG", str(tmp_path / "vbd_gate.jsonl"))
 
 
 def test_skip_panel_containing_chart_fails():
@@ -128,3 +137,38 @@ def test_check_fails_new_html_skip_panel(tmp_path: Path):
     )
     rc = main(["check", "--app-root", str(tmp_path)])
     assert rc == 2
+
+
+def test_log_writes_pass_and_fail(tmp_path, monkeypatch):
+    log = tmp_path / "steps.jsonl"
+    monkeypatch.setenv("VBD_GATE_LOG", str(log))
+    _git(tmp_path, "init", "-b", "main")
+    _git(tmp_path, "config", "user.email", "t@example.com")
+    _git(tmp_path, "config", "user.name", "t")
+    (tmp_path / "README.md").write_text("Hello: world\n", encoding="utf-8")
+    _git(tmp_path, "add", "README.md")
+    _git(tmp_path, "commit", "-m", "init")
+    assert (
+        main(
+            [
+                "check",
+                "--app-root",
+                str(tmp_path),
+                "--claim-done",
+                "--not-promoted",
+                "fixture",
+            ]
+        )
+        == 0
+    )
+    (tmp_path / "NOTE.md").write_text("Channels — named\n", encoding="utf-8")
+    assert main(["check", "--app-root", str(tmp_path)]) == 2
+    recs = [json.loads(ln) for ln in log.read_text(encoding="utf-8").splitlines() if ln.strip()]
+    assert len(recs) == 2
+    assert recs[0]["ok"] is True
+    assert recs[0]["event"] == "claim-done"
+    assert recs[1]["ok"] is False
+    assert recs[1]["event"] == "check"
+    names = [g["name"] for g in recs[1]["gates"]]
+    assert "dashes" in names
+    assert log_path() == log

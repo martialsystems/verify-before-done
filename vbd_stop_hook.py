@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 
 sys.path[:0] = [str(Path(__file__).resolve().parent)]
-from vbd_gate import run_checks  # noqa: E402
+from vbd_gate import emit_log, run_checks  # noqa: E402
 
 
 def main() -> int:
@@ -32,7 +32,8 @@ def main() -> int:
         # on finish-later dirt. Pre-push still blocks a forgotten ship.
         return 0
     root = Path(payload.get("workspaceRoot") or payload.get("cwd") or ".").resolve()
-    errs = run_checks(root, tracked_only=True, skip_if_clean=True)
+    errs, gates = run_checks(root, tracked_only=True, skip_if_clean=True)
+    emit_log(event="stop", root=root, errs=errs, gates=gates)
     if not errs:
         return 0
     msg = "vbd_gate failed; do not claim done.\n" + "\n".join("  " + e for e in errs)
