@@ -8,6 +8,7 @@ At the start of implement or UI work: apply every row whose **When** matches, un
 
 | Date | Lesson | When | Skip when |
 |------|--------|------|-----------|
+| 2026-08-20 | Heavy region dividers on a CSS grid belong on the region wrapper, not on each child. Child min-content (pencil notes, chips, badges) will jog a per-cell thick border so the main line looks broken. Keep notes or chips out of flow (`absolute` / `min-w-0` / `overflow-hidden`). | CSS grid with thick region lines and variable child content | No region lines, or children cannot change min-content |
 | 2026-08-19 | JS-injected topbar chrome (theme / hamburger) and a first-visit `overflow: hidden` disclaimer are CLS sources. Reserve the chrome slot in first-paint HTML/CSS (`scrollbar-gutter: stable`). Do not `display:none` a panel that fetch later shows: that shifts everything below. | Public HTML with injected chrome or a gate modal | No public HTML / no layout |
 | 2026-08-18 | Phone-width (390x844) and desktop (~1280) for UI, layout, nav, or in-page jumps. Named command, not a thought. Skip/hash must land the **visual** target (the chart), not a tall section header. Martialsys boards: `python3 viewer/scripts/viewport_sanity.py`. | Any HTML/CSS/nav/anchor change | No UI (pure backend, data, or docs-only with no layout) |
 | 2026-08-16 | Fetch before edit. Dirty+ahead: stash, commit, or report both. Finish-later if local is edited and origin is not ahead. Push or say why. | Any git working tree | Not a git repo |
