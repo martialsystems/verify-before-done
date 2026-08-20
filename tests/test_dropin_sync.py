@@ -39,7 +39,8 @@ class DropinSyncTest(unittest.TestCase):
         self.assertEqual(missing, [])
 
     def test_no_decorative_dashes_on_dropins(self) -> None:
-        # Full VERIFY_BEFORE_DONE.md contains intentional em-dash examples.
+        # VERIFY_BEFORE_DONE.md and punctuation-lists.md contain intentional
+        # em-dash examples and are DASH_ALLOW in vbd_gate.
         dropins = (
             "VERIFY_BEFORE_DONE.short.md",
             "AGENTS.md.drop-in",
@@ -64,14 +65,21 @@ class DropinSyncTest(unittest.TestCase):
         self.assertIn("promote", text)
 
     def test_dash_replacement_grammar_in_full_law(self) -> None:
-        text = (ROOT / "VERIFY_BEFORE_DONE.md").read_text(encoding="utf-8").lower()
-        for needle in (
+        needles = (
             "do not glob-replace",
             "the pipeline: which is already complex: needs gates",
             "still parse",
             "colon is not a universal substitute",
-        ):
-            self.assertIn(needle, text)
+        )
+        for name in ("VERIFY_BEFORE_DONE.md", "punctuation-lists.md"):
+            text = (ROOT / name).read_text(encoding="utf-8").lower()
+            for needle in needles:
+                self.assertIn(needle, text, msg="{0} missing {1!r}".format(name, needle))
+
+    def test_punctuation_lists_is_dash_allow(self) -> None:
+        text = (ROOT / "vbd_gate.py").read_text(encoding="utf-8")
+        self.assertIn('"punctuation-lists.md"', text)
+        self.assertIn('"VERIFY_BEFORE_DONE.md"', text)
 
 
 if __name__ == "__main__":

@@ -82,6 +82,7 @@ Do not assume green CI means the public surface is current.
 Do not change locked production or architecture only to refresh a stale public page.
 
 Full text: [VERIFY_BEFORE_DONE.md](./VERIFY_BEFORE_DONE.md).  
+Punctuation: [punctuation-lists.md](./punctuation-lists.md).  
 Promoted cross-project defaults: [LESSONS.md](./LESSONS.md).
 
 ---

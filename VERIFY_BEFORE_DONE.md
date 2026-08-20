@@ -29,6 +29,8 @@ For **all PDFs** (create, edit, rewrite, or content authored for a PDF deliverab
 
 Applies to chat, README/docs, commit messages, PR text, comments, and generated user-facing text.
 
+Standalone copy of this punctuation law: [punctuation-lists.md](./punctuation-lists.md).
+
 **Lists / labels:** use a **colon**, not an em dash or en dash.
 
 - Do: `Channels: named state slots with reducers`

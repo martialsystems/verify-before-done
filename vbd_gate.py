@@ -32,7 +32,7 @@ HOOK_MARK = "vbd-gate-pre-push"
 DASH_CHARS = ("\u2014", "\u2013")
 UI_SUFFIX = {".html", ".css"}
 PROSE_SUFFIX = {".md", ".txt", ".html"}
-DASH_ALLOW = {"VERIFY_BEFORE_DONE.md"}
+DASH_ALLOW = {"VERIFY_BEFORE_DONE.md", "punctuation-lists.md"}
 SKIP_CLASS = "skip-juicy"
 CHART_HINT = re.compile(r"(chart-wrap|chart_wrap)", re.I)
 

@@ -78,6 +78,7 @@ tail -n 20 ~/.grok/logs/vbd_gate.jsonl
 | Blank chat | [PASTE_BLOCK.txt](./PASTE_BLOCK.txt) |
 | Limited instruction space | [VERIFY_BEFORE_DONE.short.md](./VERIFY_BEFORE_DONE.short.md) |
 | Full project rules | [VERIFY_BEFORE_DONE.md](./VERIFY_BEFORE_DONE.md) |
+| Punctuation (colons; no glob-replaced dashes) | [punctuation-lists.md](./punctuation-lists.md) |
 | Cross-project lessons | [LESSONS.md](./LESSONS.md) |
 | Cursor project rules | [.cursor-rules-example.mdc](./.cursor-rules-example.mdc) → `.cursor/rules/verify-before-done.mdc` |
 | Skills-compatible tools | [SKILL.md](./SKILL.md) |
@@ -123,6 +124,7 @@ Every completion report must include:
 |------|------|
 | [SYSTEM.md](./SYSTEM.md) | Research-register description of the pack as implemented (2026-08-19) |
 | [VERIFY_BEFORE_DONE.md](./VERIFY_BEFORE_DONE.md) | Full rule set (quality defaults + verify process) |
+| [punctuation-lists.md](./punctuation-lists.md) | Standalone punctuation law: classify each dash, rewrite so the sentence still parses |
 | [VERIFY_BEFORE_DONE.short.md](./VERIFY_BEFORE_DONE.short.md) | Condensed rule set |
 | [PASTE_BLOCK.txt](./PASTE_BLOCK.txt) | Single paste for a new chat |
 | [SKILL.md](./SKILL.md) | Skill-format entry |
