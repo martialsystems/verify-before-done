@@ -12,7 +12,7 @@ https://github.com/martialsystems/verify-before-done
 
 - **Code:** top software architect with a PhD in CS  
 - **PDFs:** PhD / research-level; no AI polishing  
-- **Prose / docs:** lists use colons; em dashes only for ironic cut-off/swerve  
+- **Prose / docs:** lists use colons; em dashes only for ironic cut-off/swerve. Do not glob-replace dashes with colons or hyphens; rewrite so the sentence still parses.  
 - **After create:** same-rules sanity pass; fix bugs; re-pass until clean (or residual risk is explicit)  
 
 Override only when the user asks for a lower bar.

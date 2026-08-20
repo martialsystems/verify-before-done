@@ -24,6 +24,7 @@ REQUIRED = (
     "390x844",
     "promote general lessons",
     "vbd_gate",
+    "glob-replace",
 )
 
 
@@ -61,6 +62,16 @@ class DropinSyncTest(unittest.TestCase):
         self.assertIn("390x844", text)
         self.assertIn("skip when", text)
         self.assertIn("promote", text)
+
+    def test_dash_replacement_grammar_in_full_law(self) -> None:
+        text = (ROOT / "VERIFY_BEFORE_DONE.md").read_text(encoding="utf-8").lower()
+        for needle in (
+            "do not glob-replace",
+            "the pipeline: which is already complex: needs gates",
+            "still parse",
+            "colon is not a universal substitute",
+        ):
+            self.assertIn(needle, text)
 
 
 if __name__ == "__main__":

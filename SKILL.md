@@ -7,7 +7,7 @@ description: >
   user asks to verify, sanity-check, or mark work done. Prevents reporting
   success after checking only one path. Also enforces quality defaults:
   architect/PhD-level code, research-level PDFs with no AI polish, prose
-  punctuation (colons; em dash only for ironic cut-off), a same-rules
+  punctuation (colons; em dash only for ironic cut-off; do not glob-replace), a same-rules
   sanity pass after creating anything, and git remote-first (fetch; pull if
   ahead and clean; dirty+ahead: stash, commit, or report both; finish-later
   if local is edited and origin is not ahead; push or say why).
@@ -23,7 +23,7 @@ Do not report success until this process is complete.
 
 - **Code:** top software architect with a PhD in CS  
 - **PDFs:** PhD / research-level; no AI polishing  
-- **Prose / docs:** lists use colons; em dashes only for ironic cut-off/swerve  
+- **Prose / docs:** lists use colons; em dashes only for ironic cut-off/swerve. Do not glob-replace dashes with colons or hyphens; rewrite so the sentence still parses.  
 - **Create:** same-rules second pass; fix bugs; re-pass until clean (or residual risk is explicit)  
 
 Override only when the user asks for a lower bar.
@@ -54,7 +54,7 @@ Phone-width must be a named command (martialsys boards:
 - Check only the path just edited  
 - Claim verification that was not run  
 - Skip the same-rules sanity pass after creating something  
-- Ship decorative em dashes in docs while quality defaults forbid them  
+- Ship decorative em dashes, or dash-to-colon splices that no longer parse, while quality defaults forbid them  
 - Implement on a local that is behind origin after a fetch was possible  
 - Leave finished work unpushed without saying why  
 - Treat unchecked paths as probably fine without naming residual risk  

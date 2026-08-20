@@ -50,7 +50,7 @@ summary).
 |---------|---------|
 | Code | Top-architect / PhD CS: clear boundaries, no accidental complexity, right structure over a quick patch |
 | PDFs | Research register, no AI polish. Date new or rewritten sections on the PDF. Keep a Revisions list. A “Generated …” stamp is not a change date |
-| Prose | Label lists with colons. Em dashes only for ironic cut-off |
+| Prose | Label lists with colons. Em dashes only for ironic cut-off. Do not glob-replace dashes with colons or hyphens; rewrite so the sentence still parses. |
 | After create | Same-rules second pass; fix defects; re-pass until clean or residual risk is explicit |
 
 No automated scorer exists for this layer.

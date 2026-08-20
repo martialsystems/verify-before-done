@@ -34,14 +34,42 @@ Applies to chat, README/docs, commit messages, PR text, comments, and generated 
 - Do: `Channels: named state slots with reducers`
 - Do not: `Channels — named state slots with reducers`
 
-**Em dashes:** not default punctuation (not for asides, apposition, or polished rhythm). Prefer commas, periods, or colons.
+**Em dashes:** not default punctuation (not for asides, apposition, or polished rhythm). Prefer commas, periods, or colons **according to the role of that dash**. A colon is not a universal substitute.
 
 Use an em dash **only for ironic cut-off / swerve** (you start one thought, stop, say something else):
 
 - Do: `I was going to ship Friday—actually, scrap that.`
 - Do not: `Never auto-posts — you paste yourself.` (use a colon)
 
-Before reporting done on doc or prose edits: scan for decorative em/en dashes and fix them.
+**Do not glob-replace** `—` or `–` with `:`, `,`, or `-`. Classify each dash, rewrite that sentence, then reread it. Character-gone, grammar-broken is a failed verify.
+
+| What the dash was doing | Rewrite | Not |
+|-------------------------|---------|-----|
+| Label + definition (`Term — meaning`) | colon: `Term: meaning` | hyphen; a comma |
+| Paired aside (`The pipeline—which is already complex—needs gates`) | commas, parentheses, or two sentences | `The pipeline: which is already complex: needs gates` |
+| Apposition (`the gate—a fail-closed predicate—runs last`) | commas or recast | colon |
+| Contrast (`Fail closed—not best effort`) | `Fail closed, not best effort` / `rather than` | colon |
+| Result / namely (`the output—a stale board`) | recast the sentence | hyphen |
+| Range (`10–12`) | `10 to 12`; ASCII hyphen only in a true compound | colon, em dash |
+| Attribution | comma | colon unless introducing a block quote |
+| Ironic cut-off | **keep** the em dash, no spaces | colon |
+
+A colon is legal only when what follows defines, lists, or elaborates what precedes, and the words before the colon are a complete setup.
+
+- Do: `Three gates: fetch, dashes, skip-landing.`
+- Do not: `We prefer: speed.`
+- Do not: `Fail closed: not best effort: after every node.`
+
+After the rewrite the sentence must still parse: finite verb in the main clause; no `,:` / `:.` / `,,` / `::`; no relative clause glued on with a colon; no hyphen-minus standing in for an em dash (`pipeline-which is`). If the only way to drop the dash is an ugly splice, rewrite the sentence.
+
+Worked examples:
+
+- `The pipeline—which is already complex—needs gates.` → `The pipeline, which is already complex, needs gates.`
+- `Fail closed—not best effort—after every node.` → `Fail closed, not best effort, after every node.`
+- `Never auto-posts — you paste yourself.` → `Never auto-posts: you paste yourself.`
+- `Windows 10–11` → `Windows 10 to 11`
+
+Before reporting done on doc or prose edits: scan for decorative em/en dashes **and** for dash-to-colon or dash-to-hyphen splices that no longer parse.
 
 ### Create → same-rules sanity pass → fix bugs
 
@@ -73,7 +101,7 @@ For each change (or related batch of changes):
 - Check only the path you just modified.  
 - Leave unchecked branches as “probably fine” without naming them as residual risk.  
 - Claim verification that was not performed.  
-- Ship README/docs full of decorative em dashes while quality defaults forbid them.  
+- Ship README/docs full of decorative em dashes, or of dash-to-colon splices that no longer parse, while quality defaults forbid them.  
 - Implement on a local tree that is behind origin after a fetch was possible.  
 - Leave finished work unpushed without saying why.  
 - Discard finish-later local edits to make a pull easy.  
@@ -115,7 +143,7 @@ Use more than one method when the change is risky:
 - When UI cannot be observed: compare data (payloads, attributes, hashes, HTTP bodies)  
 - For UI / layout / nav / hash jumps: run a phone-width (390x844) and desktop (~1280) command (martialsys boards: `python3 viewer/scripts/viewport_sanity.py`). Name that command in the report. If none ran, residual risk; do not claim full completion.  
 - Before claiming done, run the forgettable gates: `python3 vbd_gate.py check --app-root <repo> --claim-done` with `--promoted` or `--not-promoted`. Pre-push: `python3 vbd_gate.py hook-install --app-root <repo>`.  
-- For docs/prose: search for decorative `—` / dash-asides; fix to colons or cut-off-only em dashes  
+- For docs/prose: search for decorative `—` / dash-asides. Do not glob-replace with colons or hyphens. Classify each dash and rewrite so the sentence still parses (cut-off-only em dashes stay).  
 - For git: `git fetch`, then compare to `@{upstream}` (or `origin/HEAD`); pull if behind; do not treat an unfetched local as current  
 
 ---
@@ -207,6 +235,7 @@ This is part of verify-before-done, not a separate rule.
 | Only the main success path tested | Overwrite, missing-source, and “off” cases |
 | Created once and declared done | No same-rules second pass; defects left unfixed |
 | Draft logic fixed for punctuation | README still full of decorative em dashes |
+| Em dashes glob-replaced with colons | Ungrammatical asides (`The pipeline: which is already complex: needs gates`) |
 
 ---
 

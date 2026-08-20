@@ -20,7 +20,7 @@ Copyright (c) 2026 Martial Systems LLC. MIT license: see [LICENSE](./LICENSE).
 
 ## Purpose
 
-Assistants often change one code path, confirm that path works, and report success while another entry point, deploy step, cache, or mirrored file still behaves the old way. They also ship junior-default code, AI-polished PDF prose, decorative em dashes in docs, or a first draft with no second pass.
+Assistants often change one code path, confirm that path works, and report success while another entry point, deploy step, cache, or mirrored file still behaves the old way. They also ship junior-default code, AI-polished PDF prose, decorative em dashes in docs, dash-to-colon splices that no longer parse, or a first draft with no second pass.
 
 This repository is a short set of rules you attach to a project or chat so the assistant:
 
@@ -66,7 +66,7 @@ tail -n 20 ~/.grok/logs/vbd_gate.jsonl
 |---------|------------------------------------------|
 | **Code** | Top software architect with a PhD in CS: clear design, precise implementation, right structure over quick hacks |
 | **PDFs** | PhD / research-level register; no AI polishing (no fluff, marketing gloss, or generic LLM prose) |
-| **Prose / docs** | Lists use colons; em dashes only for ironic cut-off/swerve (not for asides or polished rhythm) |
+| **Prose / docs** | Lists use colons; em dashes only for ironic cut-off/swerve (not for asides or polished rhythm). Do not glob-replace dashes with colons or hyphens; rewrite so the sentence still parses. |
 | **After create** | Same-rules sanity pass; fix defects; re-pass until clean (or residual risk is explicit) |
 
 ---
