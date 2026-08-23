@@ -8,6 +8,7 @@ At the start of implement or UI work: apply every row whose **When** matches, un
 
 | Date | Lesson | When | Skip when |
 |------|--------|------|-----------|
+| 2026-08-23 | `chrome.permissions.request` needs a user gesture. The toolbar popup (or other extension page) must call it on the click/change that enables a site. Relaying to the service worker and requesting there often fails with no prompt. | MV3 optional host or optional permission grant | Permission is already granted, or not using `optional_host_permissions` |
 | 2026-08-22 | Chrome's extension popup and options shell already show the extension icon and name. Do not repeat that logo+title in `popup.html` or the user sees a double header. Keep a document `<title>`. | MV3 `action` popup or `options_ui` page | Standalone HTML that Chrome does not wrap |
 | 2026-08-22 | An optional control on a measured overlay must be out of flow (`position: absolute`) if `getBoundingClientRect` of the host feeds placement math. Putting it in normal flow changes the box size and then the placement. Keep estimated fallback sizes unchanged. | Overlay or prompt UI whose measured size is used to place it | The control is supposed to grow the host |
 | 2026-08-21 | A Grok marketplace plugin that needs a helper must ship that helper in the pinned git tree. A separate Release zip reads as download-and-run to reviewers even when xAI docs allow helper binaries delivered separately. | Submitting or updating a Grok marketplace plugin that runs local code | Helper is an OS tool already on PATH (`git`, `gh`, `python3`) |
