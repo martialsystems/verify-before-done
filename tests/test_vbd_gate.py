@@ -18,6 +18,7 @@ from vbd_gate import (  # noqa: E402
     log_path,
     main,
     publish_vbd_to_graphforge,
+    rel_glob_match,
     run_checks,
     skip_landing_errors,
 )
@@ -485,3 +486,62 @@ def test_empty_runtime_checks_skips(tmp_path: Path):
     _init_repo(tmp_path)
     _write_runtime(tmp_path, {"runtime_checks": []})
     assert main(_claim(tmp_path)) == 0
+
+
+def test_rel_glob_match_src_tree_and_nested():
+    assert rel_glob_match("src/foo.py", "src/**")
+    assert rel_glob_match("src/a/b.py", "src/**")
+    assert rel_glob_match("src", "src/**")
+    assert not rel_glob_match("README.md", "src/**")
+    assert not rel_glob_match("bundled/x.py", "src/**")
+    assert rel_glob_match("tests/test_x.py", "**/*.py")
+    assert rel_glob_match("src/a/b.py", "**/*.py")
+    assert rel_glob_match("extension/background/service_worker.js", "extension/**")
+    assert rel_glob_match("vbd.runtime.json", "vbd.runtime.json")
+    assert not rel_glob_match("viewer/public/data/x.json", "viewer/public/*.html")
+
+
+def test_runtime_paths_skip_when_change_set_misses(tmp_path: Path):
+    _init_repo(tmp_path)
+    spec = _fail_check()
+    spec["runtime_checks"][0]["paths"] = ["src/**"]
+    _write_runtime(tmp_path, spec)
+    (tmp_path / "NOTE.md").write_text("Hello: docs only\n", encoding="utf-8")
+    assert main(_claim(tmp_path)) == 0
+    recs = _log_recs(tmp_path)
+    runtime = [g for g in recs[-1]["gates"] if g["name"] == "runtime:fail"][0]
+    assert runtime.get("skipped") is True
+    assert "no matching paths" in (runtime.get("detail") or "")
+
+
+def test_runtime_paths_run_when_change_set_hits(tmp_path: Path):
+    _init_repo(tmp_path)
+    spec = _fail_check()
+    spec["runtime_checks"][0]["paths"] = ["src/**"]
+    _write_runtime(tmp_path, spec)
+    src = tmp_path / "src"
+    src.mkdir()
+    (src / "mod.py").write_text("x = 1\n", encoding="utf-8")
+    assert main(_claim(tmp_path)) == 2
+    recs = _log_recs(tmp_path)
+    runtime = [g for g in recs[-1]["gates"] if g["name"] == "runtime:fail"][0]
+    assert runtime.get("skipped") is not True
+    assert runtime["ok"] is False
+
+
+def test_runtime_paths_string_rejected(tmp_path: Path):
+    _write_runtime(
+        tmp_path,
+        {
+            "runtime_checks": [
+                {
+                    "id": "x",
+                    "argv": [sys.executable, "-c", "pass"],
+                    "paths": "src/**",
+                }
+            ]
+        },
+    )
+    checks, errs = load_runtime_config(tmp_path)
+    assert checks is None
+    assert errs and "array of glob strings" in errs[0]

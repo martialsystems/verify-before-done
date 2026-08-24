@@ -43,7 +43,7 @@ PROSE_SUFFIX = {".md", ".txt", ".html"}
 DASH_ALLOW = {"VERIFY_BEFORE_DONE.md", "punctuation-lists.md"}
 SKIP_CLASS = "skip-juicy"
 CHART_HINT = re.compile(r"(chart-wrap|chart_wrap)", re.I)
-RUNTIME_ITEM_KEYS = {"id", "argv", "timeout_s"}
+RUNTIME_ITEM_KEYS = {"id", "argv", "timeout_s", "paths"}
 
 
 class _SkipParser(HTMLParser):
@@ -386,7 +386,32 @@ def load_runtime_config(
                         prefix, timeout_s, RUNTIME_TIMEOUT_CAP
                     )
                 ]
-        checks.append({"id": ident, "argv": list(argv), "timeout_s": timeout_s})
+        path_globs: List[str] = []
+        if "paths" in item:
+            raw_paths = item["paths"]
+            if isinstance(raw_paths, str):
+                return None, [
+                    "{0}: paths must be an array of glob strings, not a string".format(
+                        prefix
+                    )
+                ]
+            if not isinstance(raw_paths, list) or not raw_paths:
+                return None, [
+                    "{0}: paths must be a nonempty array of glob strings".format(prefix)
+                ]
+            if not all(isinstance(p, str) and p.strip() for p in raw_paths):
+                return None, [
+                    "{0}: paths entries must be nonempty strings".format(prefix)
+                ]
+            path_globs = [p.replace("\\", "/").strip() for p in raw_paths]
+        checks.append(
+            {
+                "id": ident,
+                "argv": list(argv),
+                "timeout_s": timeout_s,
+                "paths": path_globs,
+            }
+        )
     return checks, []
 
 
@@ -436,8 +461,89 @@ def _run_one_runtime(
     return [msg], _gate(name, [msg])
 
 
-def runtime_errors(root: Path) -> Tuple[List[str], List[Dict[str, Any]]]:
-    """Execute vbd.runtime.json argv lists. Missing file skips."""
+def _glob_re(pat: str) -> re.Pattern:
+    """Translate a POSIX glob with ** to a fullmatch regex."""
+    i = 0
+    out: List[str] = []
+    while i < len(pat):
+        if pat.startswith("**/", i):
+            out.append("(?:.*/)?")
+            i += 3
+            continue
+        if pat.startswith("**", i) and (i + 2 == len(pat) or pat[i + 2] != "*"):
+            out.append(".*")
+            i += 2
+            continue
+        c = pat[i]
+        if c == "*":
+            out.append("[^/]*")
+        elif c == "?":
+            out.append("[^/]")
+        else:
+            out.append(re.escape(c))
+        i += 1
+    return re.compile("^" + "".join(out) + "$")
+
+
+def rel_glob_match(rel: str, pattern: str) -> bool:
+    """True if repo-relative path matches a glob. `src/**` is the whole tree under src."""
+    rel = rel.replace("\\", "/").lstrip("./")
+    pat = pattern.replace("\\", "/").lstrip("./")
+    if not rel or not pat:
+        return False
+    if rel == pat:
+        return True
+    if pat == "**" or pat == "**/**":
+        return True
+    if pat.endswith("/**"):
+        prefix = pat[:-3]
+        if prefix == "":
+            return True
+        return rel == prefix or rel.startswith(prefix + "/")
+    return _glob_re(pat).fullmatch(rel) is not None
+
+
+def any_path_match(rels: Sequence[str], globs: Sequence[str]) -> bool:
+    return any(rel_glob_match(rel, g) for rel in rels for g in globs)
+
+
+def touch_rel_paths(
+    root: Path,
+    *,
+    from_ref: Optional[str] = None,
+    to_ref: Optional[str] = None,
+) -> List[str]:
+    """Dirty/untracked paths, plus unpublished commits vs upstream when no refs."""
+    names: Set[str] = set()
+    for p in changed_paths(root, from_ref=from_ref, to_ref=to_ref):
+        try:
+            names.add(str(p.relative_to(root)).replace("\\", "/"))
+        except ValueError:
+            names.add(p.name)
+    if from_ref and to_ref:
+        return sorted(names)
+    if is_git(root):
+        up = _git(root, ["rev-parse", "--abbrev-ref", "@{upstream}"])
+        if up.returncode == 0:
+            diff = _git(root, ["diff", "--name-only", "@{upstream}...HEAD"])
+            names.update(
+                ln.strip().replace("\\", "/")
+                for ln in (diff.stdout or "").splitlines()
+                if ln.strip()
+            )
+    return sorted(names)
+
+
+def runtime_errors(
+    root: Path,
+    *,
+    touch_rels: Optional[Sequence[str]] = None,
+) -> Tuple[List[str], List[Dict[str, Any]]]:
+    """Execute vbd.runtime.json argv lists. Missing file skips.
+
+    A check with `paths` globs runs only when a touched path matches.
+    No `paths` key: always run (the pack's own tests).
+    """
     checks, cfg_errs = load_runtime_config(root)
     if cfg_errs:
         return cfg_errs, [_gate("runtime", cfg_errs)]
@@ -447,9 +553,17 @@ def runtime_errors(root: Path) -> Tuple[List[str], List[Dict[str, Any]]]:
         ]
     if not checks:
         return [], [_gate("runtime", [], skipped=True, detail="empty runtime_checks")]
+    rels = list(touch_rels) if touch_rels is not None else touch_rel_paths(root)
     errs: List[str] = []
     gates: List[Dict[str, Any]] = []
     for spec in checks:
+        globs = spec.get("paths") or []
+        name = "runtime:{0}".format(spec["id"])
+        if globs and not any_path_match(rels, globs):
+            gates.append(
+                _gate(name, [], skipped=True, detail="no matching paths")
+            )
+            continue
         more, rec = _run_one_runtime(root, spec)
         errs.extend(more)
         gates.append(rec)
@@ -469,11 +583,19 @@ def append_runtime(
     gates: List[Dict[str, Any]],
     *,
     enabled: bool,
+    from_ref: Optional[str] = None,
+    to_ref: Optional[str] = None,
+    touch_rels: Optional[Sequence[str]] = None,
 ) -> None:
     """Mutate errs/gates. No-op when disabled or when fetch already failed."""
     if not enabled or _fetch_failed(gates):
         return
-    more, more_gates = runtime_errors(root)
+    rels = (
+        list(touch_rels)
+        if touch_rels is not None
+        else touch_rel_paths(root, from_ref=from_ref, to_ref=to_ref)
+    )
+    more, more_gates = runtime_errors(root, touch_rels=rels)
     errs.extend(more)
     gates.extend(more_gates)
 
@@ -793,6 +915,7 @@ def cmd_hook_run(args: argparse.Namespace) -> int:
     oa = origin_ahead_errors(root)
     gates.append(_gate("origin_ahead", oa))
     errs.extend(oa)
+    touch: Set[str] = set()
     if pairs:
         for remote_sha, local_sha in pairs:
             if local_sha == "0" * 40:
@@ -802,11 +925,15 @@ def cmd_hook_run(args: argparse.Namespace) -> int:
             )
             errs.extend(more)
             gates.extend(more_gates)
+            touch.update(
+                touch_rel_paths(root, from_ref=remote_sha, to_ref=local_sha)
+            )
     else:
         more, more_gates = run_checks(root, do_fetch=False)
         errs.extend(more)
         gates.extend(more_gates)
-    append_runtime(root, errs, gates, enabled=True)
+        touch.update(touch_rel_paths(root))
+    append_runtime(root, errs, gates, enabled=True, touch_rels=sorted(touch))
     emit_log(event="pre-push", root=root, errs=errs, gates=gates)
     if errs:
         for e in errs:

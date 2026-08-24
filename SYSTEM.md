@@ -10,9 +10,11 @@ and [README.md](./README.md).
 ## Revisions
 
 - **2026-08-24:** Opt-in `vbd.runtime.json`: `--claim-done` and pre-push execute
-  listed argv commands (no shell). Stop does not. Missing file skips. Indirect
-  verification is not verification. Verified line names the exact execution
-  tool or script. No pre-commit hook (finish-later commits stay allowed).
+  listed argv commands (no shell). Optional `paths` globs: skip the command when
+  the change set (dirty plus unpublished vs upstream) does not match. Stop does
+  not run them. Missing file skips. Indirect verification is not verification.
+  Verified line names the exact execution tool or script. No pre-commit hook
+  (finish-later commits stay allowed).
 - **2026-08-19:** First system note. Records quality bar vs interaction map,
   `vbd_gate`, Grok Stop hook, git pre-push, JSONL log, lesson promotion, host
   Pages publisher, and the boundary with GraphForge.
@@ -112,9 +114,13 @@ there is nothing in the change set (used by the Stop hook so Q&A is not blocked)
 Opt-in file at the app root. Missing: skip. Present: fail closed on invalid
 JSON, unknown keys, `argv` as a shell string, duplicate ids, missing command,
 nonzero exit, or timeout (default 120s, cap 600s). cwd is the app root. No
-shell. Item keys: `id`, `argv`, optional `timeout_s`. This pack lists its
-pytest suite. Other products opt in with their production-path command; do not
-copy this pack's pytest line unless that is the path to prove.
+shell. Item keys: `id`, `argv`, optional `timeout_s`, optional `paths` (nonempty
+glob array). No `paths`: always run. With `paths`: run only when a touched path
+matches (`src/**` means the whole tree under `src`, including nested files).
+Touched paths are the dirty tree plus unpublished commits vs upstream
+(pre-push uses the refs being pushed). This pack lists its pytest suite with
+no `paths` (the pack *is* the production path). Other products should set
+`paths` so a docs-only or data-only change does not run a pipeline.
 
 Indirect verification (unit tests in isolation, JSON shape, source-list count)
 is not verification of that path. The Verified report line names the exact

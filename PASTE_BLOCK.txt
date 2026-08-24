@@ -26,7 +26,8 @@ For every code, config, UI, docs, or deploy change:
    counts do not prove the production path.
    Name the exact execution tool or script. If the repo has
    vbd.runtime.json, vbd_gate runs those argv commands on --claim-done
-   and pre-push (not Stop, not pre-commit). Phone-width must be a named
+   and pre-push (not Stop, not pre-commit). Optional paths globs skip a
+   command when the change set does not match. Phone-width must be a named
    command (martialsys boards:
    python3 viewer/scripts/viewport_sanity.py), not a thought.
    Run vbd_gate.py check --claim-done so fetch, dashes, and

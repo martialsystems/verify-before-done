@@ -50,7 +50,7 @@ python3 vbd_gate.py check --app-root ~/your_product --claim-done --not-promoted 
 
 `vbd_gate` fetches, refuses origin-ahead+dirty (does not discard), scans changed docs for decorative dashes, and fails a skip jump that lands on a panel instead of the chart. Pre-push runs the same gates so a forgotten check blocks the push. This pack does **not** install a pre-commit hook: finish-later commits stay allowed.
 
-If the repo has [`vbd.runtime.json`](./vbd.runtime.json), `--claim-done` and pre-push also **execute** those argv commands (cwd is the repo, no shell). Missing file skips. Isolated unit tests, JSON-shape checks, and source-list counts are indirect verification, not verification of the production path. Name the exact execution tool or script in the report.
+If the repo has [`vbd.runtime.json`](./vbd.runtime.json), `--claim-done` and pre-push also **execute** those argv commands (cwd is the repo, no shell). Optional `paths` globs: skip that command when the change set does not match. Missing file skips. Isolated unit tests, JSON-shape checks, and source-list counts are indirect verification, not verification of the production path. Name the exact execution tool or script in the report.
 
 Product opt-in (do not copy this pack's pytest line unless that *is* the production path):
 
@@ -60,7 +60,8 @@ Product opt-in (do not copy this pack's pytest line unless that *is* the product
     {
       "id": "import-pipeline",
       "argv": ["python3", "scripts/test_import_e2e.py"],
-      "timeout_s": 120
+      "timeout_s": 120,
+      "paths": ["src/**", "scripts/**", "tests/**", "vbd.runtime.json"]
     }
   ]
 }
