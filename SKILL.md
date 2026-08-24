@@ -33,7 +33,7 @@ Override only when the user asks for a lower bar.
 1. In a git tree: fetch. If origin is ahead and the tree is clean, pull before editing. If origin is ahead and the tree is dirty: stash, commit, or report both; never discard or `reset --hard` to take the pull. If origin is not ahead and the tree is already edited: finish-later, do not discard.  
 2. Implement the change.  
 3. List all interaction paths (include prose surfaces when docs/strings change).  
-4. Check each path (tests, static review, scripts, written audit; docs: no decorative em dashes). The Grok Stop hook runs `vbd_gate` when you try to finish. Still run `python3 ~/agent_laws_verify_before_done/vbd_gate.py check --app-root . --claim-done` with `--promoted` or `--not-promoted` in the report. The user does not run this.  
+4. Check each path (tests, static review, scripts, written audit; docs: no decorative em dashes). Indirect verification is not verification: isolated unit tests, JSON-shape checks, and source-list counts do not prove the production path. Name the exact execution tool or script. If the repo has `vbd.runtime.json`, `vbd_gate` runs those argv commands on `--claim-done` and pre-push (not Stop, not pre-commit). The Grok Stop hook runs `vbd_gate` when you try to finish. Still run `python3 ~/agent_laws_verify_before_done/vbd_gate.py check --app-root . --claim-done` with `--promoted` or `--not-promoted` in the report. The user does not run this.  
 5. On failure, fix and recheck the full list. Promote general lessons to the VBD pack (`LESSONS.md`); do not leave them only in this repo. Skip when the lesson is unique to this product. Apply matching `LESSONS.md` rows on this change unless Skip-when matches.  
 6. Push completed work unless the user asked to hold it. If you do not push, the Git line must say why.  
 7. Report with the section below.  
@@ -42,7 +42,9 @@ Override only when the user asks for a lower bar.
 
 Entry points, parameters/modes, on/off and empty states, fallbacks, shared  
 state and caches, mirrored files, client differences (phone-width 390x844  
-and desktop ~1280 for UI, layout, nav, or in-page jumps), side effects, prose  
+and desktop ~1280 for UI, layout, nav, or in-page jumps), side effects,  
+dynamic runtime transforms (id assignment, merge, dedupe), time/state  
+batching (identical timestamps, N>1 in one tick), prose  
 surfaces (README, docs, commits, user-facing strings), and git (fetch /  
 pull if ahead and clean / dirty+ahead / finish-later / push or why-not).  
 Phone-width must be a named command (martialsys boards:  
@@ -68,7 +70,7 @@ Phone-width must be a named command (martialsys boards:
 ## Verify-before-done report
 - What changed:
 - Interaction map:
-- Verified: (path → method → pass/fail)
+- Verified: (path → exact execution tool/script → pass/fail)
 - Bugs found in verify pass:
 - Git: fetched; origin ahead → pulled <sha> | no recent push; finish-later <paths> | pushed <ref@sha> | did not push: <reason> | not a git repo
 - Promoted: <lesson → LESSONS.md / pack> | not promoted: <why>

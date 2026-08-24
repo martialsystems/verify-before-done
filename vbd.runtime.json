@@ -1,0 +1,9 @@
+{
+  "runtime_checks": [
+    {
+      "id": "pack-tests",
+      "argv": ["python3", "-m", "pytest", "tests", "-q"],
+      "timeout_s": 120
+    }
+  ]
+}

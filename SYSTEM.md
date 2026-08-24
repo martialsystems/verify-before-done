@@ -1,4 +1,4 @@
-# Verify Before Done: system note (2026-08-19)
+# Verify Before Done: system note (2026-08-24)
 
 **Copyright (c) 2026 Martial Systems LLC.** MIT.
 
@@ -9,6 +9,10 @@ and [README.md](./README.md).
 
 ## Revisions
 
+- **2026-08-24:** Opt-in `vbd.runtime.json`: `--claim-done` and pre-push execute
+  listed argv commands (no shell). Stop does not. Missing file skips. Indirect
+  verification is not verification. Verified line names the exact execution
+  tool or script. No pre-commit hook (finish-later commits stay allowed).
 - **2026-08-19:** First system note. Records quality bar vs interaction map,
   `vbd_gate`, Grok Stop hook, git pre-push, JSONL log, lesson promotion, host
   Pages publisher, and the boundary with GraphForge.
@@ -34,6 +38,7 @@ misses are therefore also commands.
 | Interaction map | Prose list of paths, then checks named in the report | Yes, if the list is incomplete or lied about |
 | Lesson promotion | `LESSONS.md` plus drop-ins; report `Promoted:` | Yes, unless a later gate is added |
 | `vbd_gate` | Python: fetch, origin-ahead, dashes, skip-landing, optional viewport | No, if Stop, pre-push, or deploy actually invoke it |
+| `vbd.runtime.json` | argv commands run by `--claim-done` and pre-push | Yes if the file is absent. No, when present and claim-done/pre-push invoke the gate |
 | JSONL log | One line per gate invocation | N/A (side effect of the gate) |
 
 GraphForge’s `verify_before_report` law is a *fourth* layer when a project is
@@ -94,10 +99,26 @@ Command: `python3 vbd_gate.py check --app-root DIR`. Wrapper: `bin/vbd`.
 | `skip_landing` | Any `.skip-juicy` hash target *contains* a chart wrap instead of *being* it (every skip href, not only the first) |
 | `viewport_sanity` | `viewer/scripts/viewport_sanity.py` exists, HTML/CSS changed, and that script exits non-zero (390x844 and ~1280 in-view when Chrome is present; static href check always) |
 | `claim_done` | `--claim-done` without `--promoted` or `--not-promoted` |
+| `runtime` / `runtime:<id>` | `vbd.runtime.json` present on `--claim-done`, `--with-runtime`, or pre-push, and a command fails, times out, is missing, or the JSON is invalid. Missing file or empty `runtime_checks`: skip |
 
 The gate does not pull, does not discard, and does not score the quality bar.
 `--tracked-only` ignores untracked files. `--skip-if-clean` returns pass when
 there is nothing in the change set (used by the Stop hook so Q&A is not blocked).
+`run_checks` never executes `vbd.runtime.json`; that is `--claim-done`,
+`--with-runtime`, and pre-push only.
+
+### 6.1 `vbd.runtime.json`
+
+Opt-in file at the app root. Missing: skip. Present: fail closed on invalid
+JSON, unknown keys, `argv` as a shell string, duplicate ids, missing command,
+nonzero exit, or timeout (default 120s, cap 600s). cwd is the app root. No
+shell. Item keys: `id`, `argv`, optional `timeout_s`. This pack lists its
+pytest suite. Other products opt in with their production-path command; do not
+copy this pack's pytest line unless that is the path to prove.
+
+Indirect verification (unit tests in isolation, JSON shape, source-list count)
+is not verification of that path. The Verified report line names the exact
+execution tool or script.
 
 ## 7. Automatic invocation
 
@@ -105,8 +126,8 @@ The user does not run the gate by hand to close a chat.
 
 | Event | What runs |
 |-------|-----------|
-| Grok Stop (`end_turn`) | `vbd_stop_hook.py` via `~/.grok/hooks/vbd-stop.json`. Tracked-only, skip-if-clean. Blocks the stop once on failure (`stopHookActive` then allows, so finish-later dirt cannot loop eight times). Pre-push remains the ship backstop |
-| `git push` | `.git/hooks/pre-push` after `vbd_gate.py hook-install --app-root DIR`. If this repo is the VBD pack and `~/graphforge` exists, a passing pre-push also runs `publish-gf` (sync bundle, commit, push private GraphForge). `VBD_SKIP_GF_PUBLISH=1` skips |
+| Grok Stop (`end_turn`) | `vbd_stop_hook.py` via `~/.grok/hooks/vbd-stop.json`. Tracked-only, skip-if-clean. Blocks the stop once on failure (`stopHookActive` then allows, so finish-later dirt cannot loop eight times). Does **not** run `vbd.runtime.json`. Pre-push remains the ship backstop |
+| `git push` | `.git/hooks/pre-push` after `vbd_gate.py hook-install --app-root DIR`. Runs forgettable gates **and** `vbd.runtime.json` if present. If this repo is the VBD pack and `~/graphforge` exists, a passing pre-push also runs `publish-gf` (sync bundle, commit, push private GraphForge). `VBD_SKIP_GF_PUBLISH=1` skips. Not a pre-commit hook |
 | Martialsys Pages deploy | `btc_15m_research/viewer/scripts/deploy_viewer.sh`: hard fail if `vbd_gate.py` is not found (`$VBD_GATE`, `$HOME/...`, `/root/...`, sibling clone). `--tracked-only` |
 
 Install Stop: `python3 vbd_gate.py grok-hook-install`.  
@@ -156,6 +177,7 @@ static-only (href identity), not a 390px click.
 | `AGENTS.md.drop-in` | Repo `AGENTS.md` |
 | `LESSONS.md` | Cross-project rows |
 | `vbd_gate.py` | Gates + JSONL |
+| `vbd.runtime.json` | Opt-in argv list executed on `--claim-done` and pre-push |
 | `vbd_stop_hook.py` | Grok Stop adapter |
 | `bin/vbd` | CLI wrapper |
 | `SYSTEM.md` | This note |

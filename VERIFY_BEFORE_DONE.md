@@ -92,7 +92,7 @@ For each change (or related batch of changes):
 1. In a git working tree: fetch first (local without a fetch can be old). If origin is ahead and the tree is clean, pull before editing. If origin is ahead and the tree is dirty: stash, commit, or report both; never discard or `reset --hard` to take the pull. If origin is not ahead and the tree is already edited, that is finish-later work: do not discard it.  
 2. Make the change at the quality defaults.  
 3. List every path that can reach the change (interaction map).  
-4. Check each path (tests, static review, scripts, or a written audit when a runtime check is not possible). For prose/docs: check punctuation defaults.  
+4. Check each path (tests, static review, scripts, or a written audit when a runtime check is not possible). Indirect verification is not verification: isolated unit tests, JSON-shape checks, source-list counts, and "I inspected the file" do not prove the production path. When a production path exists, run that exact execution (the same id assignment, merge, dedupe, service worker, or pipeline). For prose/docs: check punctuation defaults. If the repo has `vbd.runtime.json`, `vbd_gate` runs those argv commands on `--claim-done` and pre-push (not Stop, not pre-commit).  
 5. If a check fails or is unclear, fix it and check the full list again (not only the failing item).  
 6. Push completed work if the user did not ask to hold it (forgot-to-push default). If you do not push, the report must say why.  
 7. Report what changed, what was checked, the git disposition, and any remaining risk.
@@ -126,6 +126,8 @@ Build a short checklist for the current change.
 | Duplicates | Mirrored pages (`foo.html` vs `foo/index.html`), copied assets, second publishers |
 | Clients | Mobile vs desktop. For UI, layout, nav, or in-page jump changes: include phone-width (390x844) and desktop (~1280). The report must name the command that checked them. "I thought about mobile" is not a check. |
 | Side effects | Other code that still runs in parallel with the new path |
+| Dynamic transforms | ID assignment, state merge, dedupe |
+| Time / batching | Identical timestamps, N>1 records in one tick, concurrent writes |
 | Prose surfaces | README, docs, commits, user-facing strings, generated drafts |
 | Git | Fetch origin before edit; pull if ahead and clean; dirty+ahead: stash, commit, or report both; finish-later if dirty and not ahead; push or say why |
 
@@ -144,7 +146,8 @@ Use more than one method when the change is risky:
 - Confirm prior behavior still works when the feature is off or empty  
 - When UI cannot be observed: compare data (payloads, attributes, hashes, HTTP bodies)  
 - For UI / layout / nav / hash jumps: run a phone-width (390x844) and desktop (~1280) command (martialsys boards: `python3 viewer/scripts/viewport_sanity.py`). Name that command in the report. If none ran, residual risk; do not claim full completion.  
-- Before claiming done, run the forgettable gates: `python3 vbd_gate.py check --app-root <repo> --claim-done` with `--promoted` or `--not-promoted`. Pre-push: `python3 vbd_gate.py hook-install --app-root <repo>`.  
+- Before claiming done, run the forgettable gates: `python3 vbd_gate.py check --app-root <repo> --claim-done` with `--promoted` or `--not-promoted`. Pre-push: `python3 vbd_gate.py hook-install --app-root <repo>`. If `<repo>/vbd.runtime.json` exists, that same `--claim-done` and pre-push **run those argv commands** (cwd is the repo, no shell). Missing file skips. Invalid JSON or a failing command fails closed. The Stop hook does not run them. This pack does not install a pre-commit hook (finish-later commits stay allowed).  
+- If the defect was time/state batching (for example `Date.now()` collisions when N>1 records are stamped in one tick), write an integration test that reproduces that exact failure, confirm it fails, then fix. A single-row unit test is not that proof.  
 - For docs/prose: search for decorative `—` / dash-asides. Do not glob-replace with colons or hyphens. Classify each dash and rewrite so the sentence still parses (cut-off-only em dashes stay).  
 - For git: `git fetch`, then compare to `@{upstream}` (or `origin/HEAD`); pull if behind; do not treat an unfetched local as current  
 
@@ -167,7 +170,7 @@ report only when the checklist passes, or residual risk is stated clearly
 ## Verify-before-done report
 - What changed:
 - Interaction map:
-- Verified: (path → method → pass/fail)
+- Verified: (path → exact execution tool/script → pass/fail)
 - Bugs found in verify pass:
 - Git:
 - Promoted: <lesson → LESSONS.md / pack> | not promoted: <why>
@@ -236,6 +239,7 @@ This is part of verify-before-done, not a separate rule.
 | Pulled over dirty finish-later work | Keep or stash; do not discard |
 | Only the main success path tested | Overwrite, missing-source, and “off” cases |
 | Created once and declared done | No same-rules second pass; defects left unfixed |
+| Production path claimed verified after a unit test or JSON-shape look | Indirect verification; the merge/dedupe/id path never ran |
 | Draft logic fixed for punctuation | README still full of decorative em dashes |
 | Em dashes glob-replaced with colons | Ungrammatical asides (`The pipeline: which is already complex: needs gates`) |
 

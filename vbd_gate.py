@@ -9,6 +9,10 @@ on the repeatable misses. Judgment (quality bar, honest residuals) stays prose.
   python3 vbd_gate.py check --app-root DIR --claim-done --not-promoted 'unique to this product'
   python3 vbd_gate.py hook-install --app-root DIR
 
+If DIR/vbd.runtime.json exists, --claim-done and pre-push run those argv
+commands (cwd is DIR, no shell). Plain check does not, unless --with-runtime.
+The Stop hook never runs them. Missing file is skip, not fail.
+
 Each run appends one JSON line to ~/.grok/logs/vbd_gate.jsonl (VBD_GATE_LOG).
 Exit 0 pass, 2 fail. Does not discard local work. Does not pull.
 """
@@ -22,6 +26,7 @@ import re
 import stat
 import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
@@ -29,12 +34,16 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
 PACK_ROOT = Path(__file__).resolve().parent
 HOOK_MARK = "vbd-gate-pre-push"
+RUNTIME_FILE = "vbd.runtime.json"
+RUNTIME_TIMEOUT_DEFAULT = 120
+RUNTIME_TIMEOUT_CAP = 600
 DASH_CHARS = ("\u2014", "\u2013")
 UI_SUFFIX = {".html", ".css"}
 PROSE_SUFFIX = {".md", ".txt", ".html"}
 DASH_ALLOW = {"VERIFY_BEFORE_DONE.md", "punctuation-lists.md"}
 SKIP_CLASS = "skip-juicy"
 CHART_HINT = re.compile(r"(chart-wrap|chart_wrap)", re.I)
+RUNTIME_ITEM_KEYS = {"id", "argv", "timeout_s"}
 
 
 class _SkipParser(HTMLParser):
@@ -295,6 +304,178 @@ def viewport_errors(root: Path, paths: Iterable[Path]) -> List[str]:
             proc.returncode, " | ".join(tail[-5:]) or "no output"
         )
     ]
+
+
+def _as_text(blob: Any) -> str:
+    if blob is None:
+        return ""
+    if isinstance(blob, bytes):
+        return blob.decode("utf-8", errors="replace")
+    return str(blob)
+
+
+def _output_tail(*chunks: Any, n: int = 5) -> str:
+    text = "\n".join(_as_text(c) for c in chunks if c)
+    lines = [ln for ln in text.strip().splitlines() if ln.strip()]
+    return " | ".join(lines[-n:])
+
+
+def load_runtime_config(
+    root: Path,
+) -> Tuple[Optional[List[Dict[str, Any]]], List[str]]:
+    """Parse vbd.runtime.json. None checks means the file is absent (skip)."""
+    path = root / RUNTIME_FILE
+    if not path.is_file():
+        return None, []
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        return None, ["{0}: invalid JSON: {1}".format(RUNTIME_FILE, exc)]
+    if not isinstance(raw, dict):
+        return None, ["{0}: root must be an object".format(RUNTIME_FILE)]
+    extra = set(raw.keys()) - {"runtime_checks"}
+    if extra:
+        return None, [
+            "{0}: unknown keys: {1}".format(RUNTIME_FILE, ", ".join(sorted(extra)))
+        ]
+    if "runtime_checks" not in raw:
+        return None, ["{0}: missing runtime_checks".format(RUNTIME_FILE)]
+    items = raw["runtime_checks"]
+    if not isinstance(items, list):
+        return None, ["{0}: runtime_checks must be an array".format(RUNTIME_FILE)]
+    checks: List[Dict[str, Any]] = []
+    seen: Set[str] = set()
+    for i, item in enumerate(items):
+        prefix = "{0}: runtime_checks[{1}]".format(RUNTIME_FILE, i)
+        if not isinstance(item, dict):
+            return None, ["{0}: must be an object".format(prefix)]
+        unknown = set(item.keys()) - RUNTIME_ITEM_KEYS
+        if unknown:
+            return None, [
+                "{0}: unknown keys: {1}".format(prefix, ", ".join(sorted(unknown)))
+            ]
+        ident = item.get("id")
+        if not isinstance(ident, str) or not ident.strip():
+            return None, ["{0}: id must be a nonempty string".format(prefix)]
+        ident = ident.strip()
+        if ident in seen:
+            return None, ["{0}: duplicate id {1!r}".format(prefix, ident)]
+        seen.add(ident)
+        argv = item.get("argv")
+        if isinstance(argv, str):
+            return None, [
+                "{0}: argv must be an array of strings, not a shell string".format(
+                    prefix
+                )
+            ]
+        if not isinstance(argv, list) or not argv:
+            return None, ["{0}: argv must be a nonempty array of strings".format(prefix)]
+        if not all(isinstance(a, str) and a != "" for a in argv):
+            return None, ["{0}: argv entries must be nonempty strings".format(prefix)]
+        timeout_s: float = float(RUNTIME_TIMEOUT_DEFAULT)
+        if "timeout_s" in item:
+            ts = item["timeout_s"]
+            if isinstance(ts, bool) or not isinstance(ts, (int, float)):
+                return None, ["{0}: timeout_s must be a positive number".format(prefix)]
+            timeout_s = float(ts)
+            if timeout_s <= 0:
+                return None, ["{0}: timeout_s must be a positive number".format(prefix)]
+            if timeout_s > RUNTIME_TIMEOUT_CAP:
+                return None, [
+                    "{0}: timeout_s {1} exceeds cap {2}".format(
+                        prefix, timeout_s, RUNTIME_TIMEOUT_CAP
+                    )
+                ]
+        checks.append({"id": ident, "argv": list(argv), "timeout_s": timeout_s})
+    return checks, []
+
+
+def _run_one_runtime(
+    root: Path, spec: Dict[str, Any]
+) -> Tuple[List[str], Dict[str, Any]]:
+    ident = spec["id"]
+    name = "runtime:{0}".format(ident)
+    argv = spec["argv"]
+    timeout_s = spec["timeout_s"]
+    t0 = time.monotonic()
+    try:
+        proc = subprocess.run(
+            argv,
+            cwd=str(root),
+            capture_output=True,
+            text=True,
+            timeout=timeout_s,
+        )
+    except FileNotFoundError:
+        msg = "{0}: command not found: {1}".format(name, argv[0])
+        return [msg], _gate(name, [msg])
+    except OSError as exc:
+        msg = "{0}: cannot execute {1}: {2}".format(name, argv[0], exc)
+        return [msg], _gate(name, [msg])
+    except subprocess.TimeoutExpired as exc:
+        elapsed = time.monotonic() - t0
+        tail = _output_tail(exc.stdout, exc.stderr)
+        msg = "{0}: timeout after {1:.1f}s (limit {2}s){3}".format(
+            name,
+            elapsed,
+            timeout_s,
+            (": " + tail) if tail else "",
+        )
+        return [msg], _gate(name, [msg])
+    elapsed = time.monotonic() - t0
+    if proc.returncode == 0:
+        detail = "exit 0 in {0:.1f}s".format(elapsed)
+        return [], _gate(name, [], detail=detail)
+    tail = _output_tail(proc.stdout, proc.stderr)
+    msg = "{0}: exit {1} in {2:.1f}s{3}".format(
+        name,
+        proc.returncode,
+        elapsed,
+        (": " + tail) if tail else "",
+    )
+    return [msg], _gate(name, [msg])
+
+
+def runtime_errors(root: Path) -> Tuple[List[str], List[Dict[str, Any]]]:
+    """Execute vbd.runtime.json argv lists. Missing file skips."""
+    checks, cfg_errs = load_runtime_config(root)
+    if cfg_errs:
+        return cfg_errs, [_gate("runtime", cfg_errs)]
+    if checks is None:
+        return [], [
+            _gate("runtime", [], skipped=True, detail="no {0}".format(RUNTIME_FILE))
+        ]
+    if not checks:
+        return [], [_gate("runtime", [], skipped=True, detail="empty runtime_checks")]
+    errs: List[str] = []
+    gates: List[Dict[str, Any]] = []
+    for spec in checks:
+        more, rec = _run_one_runtime(root, spec)
+        errs.extend(more)
+        gates.append(rec)
+    return errs, gates
+
+
+def _fetch_failed(gates: Sequence[Dict[str, Any]]) -> bool:
+    return any(
+        g.get("name") == "fetch" and not g.get("ok") and not g.get("skipped")
+        for g in gates
+    )
+
+
+def append_runtime(
+    root: Path,
+    errs: List[str],
+    gates: List[Dict[str, Any]],
+    *,
+    enabled: bool,
+) -> None:
+    """Mutate errs/gates. No-op when disabled or when fetch already failed."""
+    if not enabled or _fetch_failed(gates):
+        return
+    more, more_gates = runtime_errors(root)
+    errs.extend(more)
+    gates.extend(more_gates)
 
 
 def _gate(name: str, errs: List[str], *, skipped: bool = False, detail: str = "") -> Dict[str, Any]:
@@ -580,6 +761,12 @@ def cmd_check(args: argparse.Namespace) -> int:
             promoted = "not promoted: {0}".format(args.not_promoted)
             print("  not promoted: {0}".format(args.not_promoted))
             gates.append(_gate("claim_done", []))
+    append_runtime(
+        root,
+        errs,
+        gates,
+        enabled=bool(args.claim_done or getattr(args, "with_runtime", False)),
+    )
     emit_log(event=event, root=root, errs=errs, gates=gates, promoted=promoted)
     if errs:
         for e in errs:
@@ -619,6 +806,7 @@ def cmd_hook_run(args: argparse.Namespace) -> int:
         more, more_gates = run_checks(root, do_fetch=False)
         errs.extend(more)
         gates.extend(more_gates)
+    append_runtime(root, errs, gates, enabled=True)
     emit_log(event="pre-push", root=root, errs=errs, gates=gates)
     if errs:
         for e in errs:
@@ -652,6 +840,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         action="store_true",
         help="Pass immediately when there are no changed files to gate",
     )
+    c.add_argument(
+        "--with-runtime",
+        action="store_true",
+        help="Run vbd.runtime.json argv checks even without --claim-done",
+    )
     h = sub.add_parser("hook-install", help="Install a pre-push hook in --app-root")
     with_root(h)
     sub.add_parser("grok-hook-install", help="Install the Grok Stop hook under ~/.grok/hooks")
@@ -669,6 +862,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         args.not_promoted = ""
         args.tracked_only = False
         args.skip_if_clean = False
+        args.with_runtime = False
     if cmd == "hook-install":
         hook_install(args.app_root.resolve())
         return 0

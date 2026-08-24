@@ -25,6 +25,9 @@ REQUIRED = (
     "promote general lessons",
     "vbd_gate",
     "glob-replace",
+    "indirect verification",
+    "vbd.runtime.json",
+    "exact execution",
 )
 
 

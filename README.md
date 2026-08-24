@@ -4,9 +4,9 @@
 
 # Verify Before Done
 
-Current system (research register, 2026-08-19): [SYSTEM.md](./SYSTEM.md).
+Current system (research register, 2026-08-24): [SYSTEM.md](./SYSTEM.md).
 
-Instructions for coding assistants: apply a high quality bar, check every path that can touch a change, pass over new work with the same rules, and fix bugs before reporting that the work is finished.
+Instructions for coding assistants: apply a high quality bar, check every path that can touch a change, pass over new work with the same rules, and fix bugs before reporting that the work is finished. Agents default to the fastest plausible stop. Polite phrasing ("please test your code") is not enough. VBD is two layers: structural report rules in the always-on prompt, and a harness that actually runs named commands when the repo opts in.
 
 Copyright (c) 2026 Martial Systems LLC. MIT license: see [LICENSE](./LICENSE).
 
@@ -48,7 +48,23 @@ Manual (agents, or you if you want):
 python3 vbd_gate.py check --app-root ~/your_product --claim-done --not-promoted 'unique to this product'
 ```
 
-`vbd_gate` fetches, refuses origin-ahead+dirty (does not discard), scans changed docs for decorative dashes, and fails a skip jump that lands on a panel instead of the chart. Pre-push runs the same gates so a forgotten check blocks the push.
+`vbd_gate` fetches, refuses origin-ahead+dirty (does not discard), scans changed docs for decorative dashes, and fails a skip jump that lands on a panel instead of the chart. Pre-push runs the same gates so a forgotten check blocks the push. This pack does **not** install a pre-commit hook: finish-later commits stay allowed.
+
+If the repo has [`vbd.runtime.json`](./vbd.runtime.json), `--claim-done` and pre-push also **execute** those argv commands (cwd is the repo, no shell). Missing file skips. Isolated unit tests, JSON-shape checks, and source-list counts are indirect verification, not verification of the production path. Name the exact execution tool or script in the report.
+
+Product opt-in (do not copy this pack's pytest line unless that *is* the production path):
+
+```json
+{
+  "runtime_checks": [
+    {
+      "id": "import-pipeline",
+      "argv": ["python3", "scripts/test_import_e2e.py"],
+      "timeout_s": 120
+    }
+  ]
+}
+```
 
 Each run appends one JSON line to `~/.grok/logs/vbd_gate.jsonl` (override `VBD_GATE_LOG`). That is command evidence (fetch, dashes, skip, viewport), not the interaction-map essay.
 
@@ -84,10 +100,20 @@ tail -n 20 ~/.grok/logs/vbd_gate.jsonl
 | Skills-compatible tools | [SKILL.md](./SKILL.md) |
 | Repo-level agent file | [AGENTS.md.drop-in](./AGENTS.md.drop-in) → `AGENTS.md` |
 | Forgettable gates | [vbd_gate.py](./vbd_gate.py) / `bin/vbd` |
+| Production-path argv (opt-in) | [vbd.runtime.json](./vbd.runtime.json) |
+
+### Weak prompt vs VBD
+
+| Area | Generic prompt | VBD |
+|------|----------------|-----|
+| Validation | "Make sure it works." | Named production path, exact execution command |
+| Execution | Isolated unit test or JSON shape | Declared argv on `--claim-done` and pre-push when `vbd.runtime.json` exists |
+| Edge cases | Ignored unless asked | Map includes merge/dedupe and time/state batching |
+| Completion | "I fixed it, try it." | Report block with exact tool/script, Git, Promoted |
 
 Session line (optional):
 
-> Follow Verify Before Done (quality defaults + interaction paths). Do not report finished work without the report section.
+> Follow Verify Before Done (quality defaults + interaction paths). Do not report finished work without the report section. Indirect verification is not verification.
 
 ---
 
@@ -109,7 +135,7 @@ Every completion report must include:
 ## Verify-before-done report
 - What changed:
 - Interaction map:
-- Verified: (path → method → pass/fail)
+- Verified: (path → exact execution tool/script → pass/fail)
 - Bugs found in verify pass:
 - Git:
 - Promoted: <lesson → LESSONS.md / pack> | not promoted: <why>
@@ -122,7 +148,8 @@ Every completion report must include:
 
 | File | Role |
 |------|------|
-| [SYSTEM.md](./SYSTEM.md) | Research-register description of the pack as implemented (2026-08-19) |
+| [SYSTEM.md](./SYSTEM.md) | Research-register description of the pack as implemented (2026-08-24) |
+| [vbd.runtime.json](./vbd.runtime.json) | Opt-in argv list: `--claim-done` and pre-push execute these |
 | [VERIFY_BEFORE_DONE.md](./VERIFY_BEFORE_DONE.md) | Full rule set (quality defaults + verify process) |
 | [punctuation-lists.md](./punctuation-lists.md) | Standalone punctuation law: classify each dash, rewrite so the sentence still parses |
 | [VERIFY_BEFORE_DONE.short.md](./VERIFY_BEFORE_DONE.short.md) | Condensed rule set |

@@ -6,6 +6,8 @@ You do not run this. Grok does, on Stop (end of a completed turn).
 Exit 2 + JSON block keeps the agent working until the gates pass, or until
 the host's continuation limit. Untracked finish-later files are ignored.
 A clean tree (no tracked edits) is a pass, so Q&A is not blocked.
+Runtime argv checks (vbd.runtime.json) run on --claim-done and pre-push
+only, not here: Stop must stay skip-if-clean and cannot grow a long e2e.
 """
 
 from __future__ import annotations

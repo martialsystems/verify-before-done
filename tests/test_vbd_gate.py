@@ -14,9 +14,11 @@ sys.path[:0] = [str(ROOT)]
 from vbd_gate import (  # noqa: E402
     dash_errors,
     is_vbd_pack,
+    load_runtime_config,
     log_path,
     main,
     publish_vbd_to_graphforge,
+    run_checks,
     skip_landing_errors,
 )
 
@@ -239,3 +241,247 @@ def test_is_vbd_pack_on_this_repo():
 def test_publish_gf_skipped_by_env(monkeypatch):
     monkeypatch.setenv("VBD_SKIP_GF_PUBLISH", "1")
     assert publish_vbd_to_graphforge(ROOT) == "skipped"
+
+
+def _init_repo(tmp_path: Path) -> None:
+    _git(tmp_path, "init", "-b", "main")
+    _git(tmp_path, "config", "user.email", "t@example.com")
+    _git(tmp_path, "config", "user.name", "t")
+    (tmp_path / "README.md").write_text("Hello: world\n", encoding="utf-8")
+    _git(tmp_path, "add", "README.md")
+    _git(tmp_path, "commit", "-m", "init")
+
+
+def _write_runtime(tmp_path: Path, obj: object) -> None:
+    (tmp_path / "vbd.runtime.json").write_text(
+        json.dumps(obj) if not isinstance(obj, str) else obj,
+        encoding="utf-8",
+    )
+
+
+def _ok_check(ident: str = "ok") -> dict:
+    return {
+        "runtime_checks": [
+            {
+                "id": ident,
+                "argv": [sys.executable, "-c", "raise SystemExit(0)"],
+            }
+        ]
+    }
+
+
+def _fail_check(ident: str = "fail", msg: str = "boom-tail") -> dict:
+    code = "import sys; sys.stderr.write({0!r}); raise SystemExit(1)".format(msg + "\n")
+    return {
+        "runtime_checks": [
+            {"id": ident, "argv": [sys.executable, "-c", code]}
+        ]
+    }
+
+
+def _claim(tmp_path: Path, extra: list | None = None) -> list:
+    args = [
+        "check",
+        "--app-root",
+        str(tmp_path),
+        "--claim-done",
+        "--not-promoted",
+        "fixture",
+    ]
+    if extra:
+        args.extend(extra)
+    return args
+
+
+def _log_recs(tmp_path: Path) -> list:
+    log = tmp_path / "vbd_gate.jsonl"
+    return [json.loads(ln) for ln in log.read_text(encoding="utf-8").splitlines() if ln.strip()]
+
+
+def test_runtime_missing_file_skips_on_claim_done(tmp_path: Path):
+    _init_repo(tmp_path)
+    assert main(_claim(tmp_path)) == 0
+    recs = _log_recs(tmp_path)
+    names = [g["name"] for g in recs[-1]["gates"]]
+    assert "runtime" in names
+    runtime = [g for g in recs[-1]["gates"] if g["name"] == "runtime"][0]
+    assert runtime.get("skipped") is True
+
+
+def test_runtime_claim_done_pass_logs_ok(tmp_path: Path):
+    _init_repo(tmp_path)
+    _write_runtime(tmp_path, _ok_check())
+    assert main(_claim(tmp_path)) == 0
+    recs = _log_recs(tmp_path)
+    runtime = [g for g in recs[-1]["gates"] if g["name"] == "runtime:ok"]
+    assert runtime and runtime[0]["ok"] is True
+    assert "exit 0" in (runtime[0].get("detail") or "")
+
+
+def test_runtime_claim_done_nonzero_fails_with_tail(tmp_path: Path):
+    _init_repo(tmp_path)
+    _write_runtime(tmp_path, _fail_check())
+    rc = main(_claim(tmp_path))
+    assert rc == 2
+    recs = _log_recs(tmp_path)
+    runtime = [g for g in recs[-1]["gates"] if g["name"] == "runtime:fail"][0]
+    assert runtime["ok"] is False
+    assert "boom-tail" in (runtime.get("detail") or "")
+
+
+def test_runtime_command_not_found(tmp_path: Path):
+    _init_repo(tmp_path)
+    _write_runtime(
+        tmp_path,
+        {
+            "runtime_checks": [
+                {"id": "missing", "argv": ["vbd-no-such-cmd-xyz"]}
+            ]
+        },
+    )
+    assert main(_claim(tmp_path)) == 2
+
+
+def test_runtime_timeout(tmp_path: Path):
+    _init_repo(tmp_path)
+    _write_runtime(
+        tmp_path,
+        {
+            "runtime_checks": [
+                {
+                    "id": "slow",
+                    "argv": [sys.executable, "-c", "import time; time.sleep(5)"],
+                    "timeout_s": 1,
+                }
+            ]
+        },
+    )
+    assert main(_claim(tmp_path)) == 2
+
+
+def test_load_runtime_config_rejects_invalid(tmp_path: Path):
+    _write_runtime(tmp_path, "{not json")
+    checks, errs = load_runtime_config(tmp_path)
+    assert checks is None and errs
+
+    _write_runtime(tmp_path, {"runtime_checks": []})
+    checks, errs = load_runtime_config(tmp_path)
+    assert checks == [] and not errs
+
+    _write_runtime(tmp_path, {"nope": 1})
+    checks, errs = load_runtime_config(tmp_path)
+    assert errs and "unknown keys" in errs[0]
+
+    _write_runtime(tmp_path, {})
+    checks, errs = load_runtime_config(tmp_path)
+    assert errs and "missing runtime_checks" in errs[0]
+
+    _write_runtime(
+        tmp_path,
+        {"runtime_checks": [{"id": "x", "argv": "npm test"}]},
+    )
+    checks, errs = load_runtime_config(tmp_path)
+    assert errs and "shell string" in errs[0]
+
+    _write_runtime(
+        tmp_path,
+        {
+            "runtime_checks": [
+                {"id": "x", "argv": [sys.executable, "-c", "pass"]},
+                {"id": "x", "argv": [sys.executable, "-c", "pass"]},
+            ]
+        },
+    )
+    checks, errs = load_runtime_config(tmp_path)
+    assert errs and "duplicate id" in errs[0]
+
+    _write_runtime(
+        tmp_path,
+        {
+            "runtime_checks": [
+                {
+                    "id": "x",
+                    "argv": [sys.executable, "-c", "pass"],
+                    "shell": True,
+                }
+            ]
+        },
+    )
+    checks, errs = load_runtime_config(tmp_path)
+    assert errs and "unknown keys" in errs[0]
+
+    _write_runtime(
+        tmp_path,
+        {
+            "runtime_checks": [
+                {"id": "x", "argv": [sys.executable, "-c", "pass"], "timeout_s": 0}
+            ]
+        },
+    )
+    checks, errs = load_runtime_config(tmp_path)
+    assert errs and "positive number" in errs[0]
+
+    _write_runtime(
+        tmp_path,
+        {
+            "runtime_checks": [
+                {"id": "x", "argv": [sys.executable, "-c", "pass"], "timeout_s": 601}
+            ]
+        },
+    )
+    checks, errs = load_runtime_config(tmp_path)
+    assert errs and "exceeds cap" in errs[0]
+
+
+def test_plain_check_does_not_run_runtime(tmp_path: Path):
+    _init_repo(tmp_path)
+    _write_runtime(tmp_path, _fail_check())
+    assert main(["check", "--app-root", str(tmp_path)]) == 0
+    assert main(["check", "--app-root", str(tmp_path), "--with-runtime"]) == 2
+
+
+def test_run_checks_omits_runtime_gates(tmp_path: Path):
+    _init_repo(tmp_path)
+    _write_runtime(tmp_path, _fail_check())
+    _errs, gates = run_checks(tmp_path)
+    names = [g["name"] for g in gates]
+    assert not any(n == "runtime" or n.startswith("runtime:") for n in names)
+
+
+def test_stop_hook_does_not_run_runtime(tmp_path: Path):
+    import io
+    from vbd_stop_hook import main as stop_main
+
+    _init_repo(tmp_path)
+    (tmp_path / "README.md").write_text("Hello: world again\n", encoding="utf-8")
+    _write_runtime(tmp_path, _fail_check())
+    payload = json.dumps(
+        {"reason": "end_turn", "cwd": str(tmp_path), "workspaceRoot": str(tmp_path)}
+    )
+    old = sys.stdin
+    try:
+        sys.stdin = io.StringIO(payload)
+        assert stop_main() == 0
+    finally:
+        sys.stdin = old
+    assert main(_claim(tmp_path)) == 2
+
+
+def test_hook_run_executes_runtime(tmp_path: Path):
+    import io
+
+    _init_repo(tmp_path)
+    _write_runtime(tmp_path, _fail_check())
+    old = sys.stdin
+    try:
+        sys.stdin = io.StringIO("")
+        rc = main(["hook-run", "--app-root", str(tmp_path)])
+    finally:
+        sys.stdin = old
+    assert rc == 2
+
+
+def test_empty_runtime_checks_skips(tmp_path: Path):
+    _init_repo(tmp_path)
+    _write_runtime(tmp_path, {"runtime_checks": []})
+    assert main(_claim(tmp_path)) == 0

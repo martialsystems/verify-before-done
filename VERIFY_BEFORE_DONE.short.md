@@ -17,8 +17,8 @@ Do not report fixed, done, or ready to try until:
 
 1. In a git tree: `git fetch`. If origin is ahead and the tree is clean, pull before editing. If origin is ahead and the tree is dirty: stash, commit, or report both; never discard or `reset --hard` to take the pull. If origin is not ahead and the tree is already edited, that is finish-later work: do not discard it.  
 2. The change is implemented.  
-3. Every interaction path is listed (entry points, modes, on/off, fallbacks, caches, mirrors, deploys, side effects, prose surfaces, git). For UI, layout, nav, or in-page jumps: include phone-width (390x844) and desktop (~1280).  
-4. Each path is checked (tests, search, scripts, written audit; docs scanned for decorative em dashes). Phone-width must be a named command (martialsys boards: `python3 viewer/scripts/viewport_sanity.py`), not a thought. Run `vbd_gate.py check --claim-done` so fetch, dashes, and skip-landing cannot be forgotten.  
+3. Every interaction path is listed (entry points, modes, on/off, fallbacks, caches, mirrors, deploys, side effects, id assignment / merge / dedupe, time/state batching, prose surfaces, git). For UI, layout, nav, or in-page jumps: include phone-width (390x844) and desktop (~1280).  
+4. Each path is checked (tests, search, scripts, written audit; docs scanned for decorative em dashes). Indirect verification is not verification: isolated unit tests, JSON-shape checks, and source-list counts do not prove the production path. Name the exact execution tool or script. If the repo has `vbd.runtime.json`, `vbd_gate` runs those argv commands on `--claim-done` and pre-push (not Stop, not pre-commit). Phone-width must be a named command (martialsys boards: `python3 viewer/scripts/viewport_sanity.py`), not a thought. Run `vbd_gate.py check --claim-done` so fetch, dashes, and skip-landing cannot be forgotten.  
 5. Failures are fixed and the full list is rechecked. Promote general lessons to the VBD pack (`LESSONS.md`); do not leave them only in this repo. Skip when the lesson is unique to this product.  
 6. Completed work is pushed unless the user asked to hold it (forgot-to-push default). If you do not push, the Git line must say why.  
 7. The report section below is filled in.
@@ -34,7 +34,7 @@ After any change, end with:
 ## Verify-before-done report
 - What changed:
 - Interaction map:
-- Verified: (path → method → pass/fail)
+- Verified: (path → exact execution tool/script → pass/fail)
 - Bugs found in verify pass:
 - Git: fetched; origin ahead → pulled <sha> | no recent push; finish-later <paths> | pushed <ref@sha> | did not push: <reason> | not a git repo
 - Promoted: <lesson → LESSONS.md / pack> | not promoted: <why>
