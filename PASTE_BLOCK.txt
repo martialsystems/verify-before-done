@@ -6,7 +6,7 @@ Follow these rules for the rest of this conversation.
 Quality defaults (override only if the user asks for a lower bar):
 - Code: work at the level of a top software architect with a PhD in CS.
 - PDFs: PhD / research-level writing; no AI polishing (no fluff or generic LLM prose).
-- Prose/docs: lists use colons; em dashes only for ironic cut-off/swerve (not for asides or polished rhythm). Do not glob-replace dashes with colons or hyphens; rewrite so the sentence still parses.
+- Prose/docs: lists use colons; em dashes only for ironic cut-off/swerve (not for asides or polished rhythm). Do not glob-replace dashes with colons or hyphens; rewrite so the sentence still parses. Write from the data we have; no "What it is not" section except legal/T&C.
 - After creating anything: pass over again with the same rules, fix bugs, re-pass until clean (or residual risk is explicit).
 
 For every code, config, UI, docs, or deploy change:

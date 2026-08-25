@@ -6,7 +6,7 @@
 
 - **Code:** top software architect with a PhD in CS (clear design, precise implementation, right structure over quick hacks).  
 - **PDFs:** PhD / research-level register; no AI polishing (no fluff, marketing gloss, or generic LLM prose).  
-- **Prose / docs:** lists use colons; em dashes only for ironic cut-off/swerve (not for asides or polished rhythm). Do not glob-replace dashes with colons or hyphens; rewrite so the sentence still parses.  
+- **Prose / docs:** lists use colons; em dashes only for ironic cut-off/swerve (not for asides or polished rhythm). Do not glob-replace dashes with colons or hyphens; rewrite so the sentence still parses. Write from the data we have; no `What it is not` section except legal/T&C.  
 - **After create:** pass over again with the same rules; fix bugs; re-pass until clean (or residual risk is explicit).  
 
 Override only when the user asks for a sketch, prototype, or lower bar.

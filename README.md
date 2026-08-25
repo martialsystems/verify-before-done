@@ -20,7 +20,7 @@ Copyright (c) 2026 Martial Systems LLC. MIT license: see [LICENSE](./LICENSE).
 
 ## Purpose
 
-Assistants often change one code path, confirm that path works, and report success while another entry point, deploy step, cache, or mirrored file still behaves the old way. They also ship junior-default code, AI-polished PDF prose, decorative em dashes in docs, dash-to-colon splices that no longer parse, or a first draft with no second pass.
+Assistants often change one code path, confirm that path works, and report success while another entry point, deploy step, cache, or mirrored file still behaves the old way. They also ship junior-default code, AI-polished PDF prose, decorative em dashes in docs, dash-to-colon splices that no longer parse, a `What it is not` section instead of writing from the data we have, or a first draft with no second pass.
 
 This repository is a short set of rules you attach to a project or chat so the assistant:
 
@@ -83,7 +83,7 @@ tail -n 20 ~/.grok/logs/vbd_gate.jsonl
 |---------|------------------------------------------|
 | **Code** | Top software architect with a PhD in CS: clear design, precise implementation, right structure over quick hacks |
 | **PDFs** | PhD / research-level register; no AI polishing (no fluff, marketing gloss, or generic LLM prose) |
-| **Prose / docs** | Lists use colons; em dashes only for ironic cut-off/swerve (not for asides or polished rhythm). Do not glob-replace dashes with colons or hyphens; rewrite so the sentence still parses. |
+| **Prose / docs** | Lists use colons; em dashes only for ironic cut-off/swerve (not for asides or polished rhythm). Do not glob-replace dashes with colons or hyphens; rewrite so the sentence still parses. Write from the data we have; no `What it is not` section except legal/T&C. |
 | **After create** | Same-rules sanity pass; fix defects; re-pass until clean (or residual risk is explicit) |
 
 ---
@@ -96,6 +96,7 @@ tail -n 20 ~/.grok/logs/vbd_gate.jsonl
 | Limited instruction space | [VERIFY_BEFORE_DONE.short.md](./VERIFY_BEFORE_DONE.short.md) |
 | Full project rules | [VERIFY_BEFORE_DONE.md](./VERIFY_BEFORE_DONE.md) |
 | Punctuation (colons; no glob-replaced dashes) | [punctuation-lists.md](./punctuation-lists.md) |
+| Write from the data we have | [write-from-data.md](./write-from-data.md) |
 | Cross-project lessons | [LESSONS.md](./LESSONS.md) |
 | Cursor project rules | [.cursor-rules-example.mdc](./.cursor-rules-example.mdc) → `.cursor/rules/verify-before-done.mdc` |
 | Skills-compatible tools | [SKILL.md](./SKILL.md) |
@@ -153,6 +154,7 @@ Every completion report must include:
 | [vbd.runtime.json](./vbd.runtime.json) | Opt-in argv list: `--claim-done` and pre-push execute these |
 | [VERIFY_BEFORE_DONE.md](./VERIFY_BEFORE_DONE.md) | Full rule set (quality defaults + verify process) |
 | [punctuation-lists.md](./punctuation-lists.md) | Standalone punctuation law: classify each dash, rewrite so the sentence still parses |
+| [write-from-data.md](./write-from-data.md) | Write from the data we have; no `What it is not` except legal/T&C |
 | [VERIFY_BEFORE_DONE.short.md](./VERIFY_BEFORE_DONE.short.md) | Condensed rule set |
 | [PASTE_BLOCK.txt](./PASTE_BLOCK.txt) | Single paste for a new chat |
 | [SKILL.md](./SKILL.md) | Skill-format entry |

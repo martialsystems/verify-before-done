@@ -73,6 +73,16 @@ Worked examples:
 
 Before reporting done on doc or prose edits: scan for decorative em/en dashes **and** for dash-to-colon or dash-to-hyphen splices that no longer parse.
 
+### Write from the data we have
+
+Standalone copy: [write-from-data.md](./write-from-data.md).
+
+Describe what the project is, what it does, and what the measurements show. Do not define a project by what it is not. No `What it is not` section on product copy, READMEs, or site pages. Legal terms, financial T&C, and ops gates already in that repo (example: first Kalshi research watcher, no live orders) are the exception. Do not copy this law into other product READMEs.
+
+Positive headings: What this is; What it does; Data; How to run; Current results; Inputs and outputs.
+
+Site pages that already used the pattern: leave them unless the user asks to rewrite.
+
 ### Create → same-rules sanity pass → fix bugs
 
 Whenever you **create** something (code, config, UI, PDF, docs, scripts, or other deliverables):
@@ -104,6 +114,7 @@ For each change (or related batch of changes):
 - Leave unchecked branches as “probably fine” without naming them as residual risk.  
 - Claim verification that was not performed.  
 - Ship README/docs full of decorative em dashes, or of dash-to-colon splices that no longer parse, while quality defaults forbid them.  
+- Ship a `What it is not` section on product copy, READMEs, or site pages (legal/T&C excepted).  
 - Implement on a local tree that is behind origin after a fetch was possible.  
 - Leave finished work unpushed without saying why.  
 - Discard finish-later local edits to make a pull easy.  
@@ -148,7 +159,7 @@ Use more than one method when the change is risky:
 - For UI / layout / nav / hash jumps: run a phone-width (390x844) and desktop (~1280) command (martialsys boards: `python3 viewer/scripts/viewport_sanity.py`). Name that command in the report. If none ran, residual risk; do not claim full completion.  
 - Before claiming done, run the forgettable gates: `python3 vbd_gate.py check --app-root <repo> --claim-done` with `--promoted` or `--not-promoted`. Pre-push: `python3 vbd_gate.py hook-install --app-root <repo>`. If `<repo>/vbd.runtime.json` exists, that same `--claim-done` and pre-push **run those argv commands** (cwd is the repo, no shell). Optional `paths` globs: skip a command when the change set does not match. Missing file skips. Invalid JSON or a failing command fails closed. The Stop hook does not run them. This pack does not install a pre-commit hook (finish-later commits stay allowed).  
 - If the defect was time/state batching (for example `Date.now()` collisions when N>1 records are stamped in one tick), write an integration test that reproduces that exact failure, confirm it fails, then fix. A single-row unit test is not that proof.  
-- For docs/prose: search for decorative `—` / dash-asides. Do not glob-replace with colons or hyphens. Classify each dash and rewrite so the sentence still parses (cut-off-only em dashes stay).  
+- For docs/prose: search for decorative `—` / dash-asides. Do not glob-replace with colons or hyphens. Classify each dash and rewrite so the sentence still parses (cut-off-only em dashes stay). Write from the data we have: no `What it is not` section except legal/T&C.  
 - For git: `git fetch`, then compare to `@{upstream}` (or `origin/HEAD`); pull if behind; do not treat an unfetched local as current  
 
 ---
@@ -242,6 +253,7 @@ This is part of verify-before-done, not a separate rule.
 | Production path claimed verified after a unit test or JSON-shape look | Indirect verification; the merge/dedupe/id path never ran |
 | Draft logic fixed for punctuation | README still full of decorative em dashes |
 | Em dashes glob-replaced with colons | Ungrammatical asides (`The pipeline: which is already complex: needs gates`) |
+| README or site page opens with what the project is not | Write from the data we have; legal/T&C only |
 
 ---
 

@@ -28,6 +28,7 @@ REQUIRED = (
     "indirect verification",
     "vbd.runtime.json",
     "exact execution",
+    "write from the data we have",
 )
 
 
@@ -53,6 +54,7 @@ class DropinSyncTest(unittest.TestCase):
             "README.md",
             "LESSONS.md",
             "SYSTEM.md",
+            "write-from-data.md",
         )
         offenders = []
         for name in dropins:
@@ -78,6 +80,16 @@ class DropinSyncTest(unittest.TestCase):
             text = (ROOT / name).read_text(encoding="utf-8").lower()
             for needle in needles:
                 self.assertIn(needle, text, msg="{0} missing {1!r}".format(name, needle))
+
+    def test_write_from_data_law_exists(self) -> None:
+        text = (ROOT / "write-from-data.md").read_text(encoding="utf-8").lower()
+        for needle in (
+            "write from the data we have",
+            "what it is not",
+            "what this is",
+            "legal",
+        ):
+            self.assertIn(needle, text, msg="write-from-data.md missing {0!r}".format(needle))
 
     def test_punctuation_lists_is_dash_allow(self) -> None:
         text = (ROOT / "vbd_gate.py").read_text(encoding="utf-8")

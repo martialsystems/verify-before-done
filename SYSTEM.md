@@ -1,4 +1,4 @@
-# Verify Before Done: system note (2026-08-24)
+# Verify Before Done: system note (2026-08-25)
 
 **Copyright (c) 2026 Martial Systems LLC.** MIT.
 
@@ -9,6 +9,9 @@ and [README.md](./README.md).
 
 ## Revisions
 
+- **2026-08-25:** Prose default: write from the data we have. No `What it is
+  not` section on product copy. Legal/T&C and existing ops gates stay allowed.
+  Standalone: [write-from-data.md](./write-from-data.md).
 - **2026-08-24:** Opt-in `vbd.runtime.json`: `--claim-done` and pre-push execute
   listed argv commands (no shell). Optional `paths` globs: skip the command when
   the change set (dirty plus unpublished vs upstream) does not match. Stop does
@@ -57,7 +60,7 @@ summary).
 |---------|---------|
 | Code | Top-architect / PhD CS: clear boundaries, no accidental complexity, right structure over a quick patch |
 | PDFs | Research register, no AI polish. Date new or rewritten sections on the PDF. Keep a Revisions list. A “Generated …” stamp is not a change date |
-| Prose | Label lists with colons. Em dashes only for ironic cut-off. Do not glob-replace dashes with colons or hyphens; rewrite so the sentence still parses. |
+| Prose | Label lists with colons. Em dashes only for ironic cut-off. Do not glob-replace dashes with colons or hyphens; rewrite so the sentence still parses. Write from the data we have; no `What it is not` except legal/T&C. |
 | After create | Same-rules second pass; fix defects; re-pass until clean or residual risk is explicit |
 
 No automated scorer exists for this layer.
@@ -177,6 +180,7 @@ static-only (href identity), not a 390px click.
 |------|------|
 | `VERIFY_BEFORE_DONE.md` | Full prose law |
 | `punctuation-lists.md` | Colon lists; em dash only for cut-off; classify-then-rewrite (not glob-replace) |
+| `write-from-data.md` | Write from the data we have; no `What it is not` except legal/T&C |
 | `VERIFY_BEFORE_DONE.short.md` | Condensed law |
 | `PASTE_BLOCK.txt` | One-shot chat paste |
 | `SKILL.md` | Grok/Claude skill |
