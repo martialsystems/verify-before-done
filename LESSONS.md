@@ -8,6 +8,7 @@ At the start of implement or UI work: apply every row whose **When** matches, un
 
 | Date | Lesson | When | Skip when |
 |------|--------|------|-----------|
+| 2026-08-27 | A public GitHub repo needs a recognized LICENSE file (MIT or Apache-2.0 on the code). "All rights reserved" in the README with no LICENSE, or a LICENSE that is only ARR, reads as unlicensed/other and confuses GitHub. | Publishing or flipping a repo to public | Stays private; LICENSE already MIT or Apache-2.0 |
 | 2026-08-27 | If a headline list of named cases is selected by a window-max (or peak) statistic, the matching mean (or footprint) must sit in the same table row or text window. A name-only list is an overclaim even when banned phrases are absent. | Reports that name entities chosen by max-in-window, peak, or envelope stats | The contract uses only the max; or the names never appear |
 | 2026-08-27 | A classifier trained on a reweighted or stratified sample can rank well (PR-AUC above the prevalence baseline) while Brier is worse than the constant classifier. Log calibration separately from ranking. Do not treat an uncalibrated 0.75 as a cutoff. | Probability models trained with oversampling, class weights, or 1:k negatives | Rank-only scores never used as probabilities |
 | 2026-08-27 | If a metric is defined along a flow path or graph, Euclidean nearest-neighbor is the wrong oracle. Write a ridge case where the nearest object is not the drained one. | HAND, cost-distance, network distance, any along-path height or time | Distances the contract defines as Euclidean |
