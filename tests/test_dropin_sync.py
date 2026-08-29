@@ -69,6 +69,12 @@ class DropinSyncTest(unittest.TestCase):
         self.assertIn("skip when", text)
         self.assertIn("promote", text)
 
+    def test_lessons_catalog_has_weather_index_row(self) -> None:
+        text = (ROOT / "LESSONS.md").read_text(encoding="utf-8")
+        self.assertIn("weather-research.md", text)
+        self.assertIn("RESEARCH.md", text)
+        self.assertIn("lane gist", text)
+
     def test_dash_replacement_grammar_in_full_law(self) -> None:
         needles = (
             "do not glob-replace",
