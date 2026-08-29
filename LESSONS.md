@@ -8,6 +8,7 @@ At the start of implement or UI work: apply every row whose **When** matches, un
 
 | Date | Lesson | When | Skip when |
 |------|--------|------|-----------|
+| 2026-08-29 | RMSE can improve while MAE gets worse. That is peaks, not a closed mechanism. Keep both columns. Do not write the target as explained on RMSE alone. | Multi-feature holdout skill tables | MAE also improves, or the product is RMSE-only by contract |
 | 2026-08-29 | A RMSE edge much smaller than the honesty bar already used on a sibling failure (Ridge lost to persistence here) is a weak yes, not a closed mechanism. Keep the table. Do not write the second target as explained. | Multi-target skill on one frozen split after a stricter negative sibling | The second-target margin is comparable to the primary result |
 | 2026-08-28 | Two official gages on the same named tributary: a complete daily 00060 on the locked window beats a mouth-ward site that starts after train start. Document the incomplete site. Empty 00060 is fetch-or-stop, not an invented third site. | NWIS (or similar) tributary selection on a frozen train/holdout split | Only one official site exists; or the mouth-ward record covers train |
 | 2026-08-28 | USGS waterservices can return HTTP 200 then raise `IncompleteRead` on a chunked body. Retry it. Do not treat the first truncated read as empty 00060. | NWIS DV/IV JSON over `urlopen` | The client already retries `IncompleteRead`; or the feed is a local file |
