@@ -23,6 +23,9 @@ Do **not** copy this law into other product READMEs. One home rule is enough.
 - Use positive headings
 - State a measured gap as data when that gap **is** the finding (example:
   "13 rows dropped for missing coordinates")
+- Measured quantities at or above 1,000 take thousands separators (tons, RMSE,
+  counts). Identifiers do not: SHAs, facility IDs, years, gist ids. JSON stays
+  raw.
 
 Positive headings (use these, not negation):
 
