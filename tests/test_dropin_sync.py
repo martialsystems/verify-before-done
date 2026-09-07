@@ -55,6 +55,7 @@ class DropinSyncTest(unittest.TestCase):
             "LESSONS.md",
             "SYSTEM.md",
             "write-from-data.md",
+            "github_readme_video.py",
         )
         offenders = []
         for name in dropins:
@@ -86,6 +87,16 @@ class DropinSyncTest(unittest.TestCase):
             text = (ROOT / name).read_text(encoding="utf-8").lower()
             for needle in needles:
                 self.assertIn(needle, text, msg="{0} missing {1!r}".format(name, needle))
+
+    def test_github_readme_video_fast_path(self) -> None:
+        text = (ROOT / "LESSONS.md").read_text(encoding="utf-8")
+        self.assertIn("github_readme_video.py", text)
+        self.assertIn("user-attachments/assets", text)
+        self.assertTrue((ROOT / "github_readme_video.py").is_file())
+        script = (ROOT / "github_readme_video.py").read_text(encoding="utf-8")
+        self.assertIn("issue comment", script)
+        self.assertIn("--attach", script)
+        self.assertNotIn("<video src=", script.split("GitHub README sanitizes", 1)[0])
 
     def test_write_from_data_law_exists(self) -> None:
         text = (ROOT / "write-from-data.md").read_text(encoding="utf-8").lower()

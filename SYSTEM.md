@@ -181,6 +181,7 @@ static-only (href identity), not a 390px click.
 | `VERIFY_BEFORE_DONE.md` | Full prose law |
 | `punctuation-lists.md` | Colon lists; em dash only for cut-off; classify-then-rewrite (not glob-replace) |
 | `write-from-data.md` | Write from the data we have; no `What it is not` except legal/T&C |
+| `github_readme_video.py` | Upload an MP4; print the GitHub README `user-attachments` player URL |
 | `VERIFY_BEFORE_DONE.short.md` | Condensed law |
 | `PASTE_BLOCK.txt` | One-shot chat paste |
 | `SKILL.md` | Grok/Claude skill |

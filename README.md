@@ -98,6 +98,7 @@ tail -n 20 ~/.grok/logs/vbd_gate.jsonl
 | Punctuation (colons; no glob-replaced dashes) | [punctuation-lists.md](./punctuation-lists.md) |
 | Write from the data we have | [write-from-data.md](./write-from-data.md) |
 | Cross-project lessons | [LESSONS.md](./LESSONS.md) |
+| GitHub README video embed | [github_readme_video.py](./github_readme_video.py) |
 | Cursor project rules | [.cursor-rules-example.mdc](./.cursor-rules-example.mdc) → `.cursor/rules/verify-before-done.mdc` |
 | Skills-compatible tools | [SKILL.md](./SKILL.md) |
 | Repo-level agent file | [AGENTS.md.drop-in](./AGENTS.md.drop-in) → `AGENTS.md` |
@@ -155,6 +156,7 @@ Every completion report must include:
 | [VERIFY_BEFORE_DONE.md](./VERIFY_BEFORE_DONE.md) | Full rule set (quality defaults + verify process) |
 | [punctuation-lists.md](./punctuation-lists.md) | Standalone punctuation law: classify each dash, rewrite so the sentence still parses |
 | [write-from-data.md](./write-from-data.md) | Write from the data we have; no `What it is not` except legal/T&C |
+| [github_readme_video.py](./github_readme_video.py) | Upload an MP4 and print the GitHub README player URL |
 | [VERIFY_BEFORE_DONE.short.md](./VERIFY_BEFORE_DONE.short.md) | Condensed rule set |
 | [PASTE_BLOCK.txt](./PASTE_BLOCK.txt) | Single paste for a new chat |
 | [SKILL.md](./SKILL.md) | Skill-format entry |
