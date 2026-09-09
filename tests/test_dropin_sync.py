@@ -96,6 +96,8 @@ class DropinSyncTest(unittest.TestCase):
         script = (ROOT / "github_readme_video.py").read_text(encoding="utf-8")
         self.assertIn("issue comment", script)
         self.assertIn("--attach", script)
+        self.assertIn("loudnorm", text)
+        self.assertIn("loudnorm", script)
         self.assertNotIn("<video src=", script.split("GitHub README sanitizes", 1)[0])
 
     def test_write_from_data_law_exists(self) -> None:

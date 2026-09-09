@@ -15,6 +15,9 @@ Paste the printed URL into the README with a blank line above and below.
 Keep the repo file for clones. Verify the live GitHub HTML has ``<video`` or
 ``private-user-images``. Do not POST uploads.github.com by hand. Do not use an
 HTML video tag.
+
+If the clip has speech, two-pass loudnorm to I=-9 TP=-0.5 LRA=7 first.
+ReplayKit system audio is often -27 LUFS and inaudible in GitHub's player.
 """
 
 from __future__ import annotations
