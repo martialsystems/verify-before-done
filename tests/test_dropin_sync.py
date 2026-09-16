@@ -83,6 +83,7 @@ class DropinSyncTest(unittest.TestCase):
         self.assertIn("FLY.md", text)
         self.assertIn("parent heading", text)
         self.assertIn("not one flat list", text)
+        self.assertIn("humanized names", text)
 
     def test_dash_replacement_grammar_in_full_law(self) -> None:
         needles = (
