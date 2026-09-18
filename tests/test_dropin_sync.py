@@ -29,6 +29,8 @@ REQUIRED = (
     "vbd.runtime.json",
     "exact execution",
     "write from the data we have",
+    "real browser click-through",
+    "GitHub depends",
 )
 
 
@@ -75,6 +77,13 @@ class DropinSyncTest(unittest.TestCase):
         self.assertIn("weather-research.md", text)
         self.assertIn("RESEARCH.md", text)
         self.assertIn("lane gist", text)
+
+    def test_lessons_catalog_has_browser_click_through_row(self) -> None:
+        text = (ROOT / "LESSONS.md").read_text(encoding="utf-8")
+        self.assertIn("real browser click-through", text)
+        self.assertIn("GitHub depends", text)
+        self.assertIn("Camoufox", text)
+        self.assertIn("source-only git push", text)
 
     def test_lessons_catalog_has_fly_index_row(self) -> None:
         text = (ROOT / "LESSONS.md").read_text(encoding="utf-8")

@@ -52,6 +52,7 @@ Phone-width must be a named command (martialsys boards:
 
 ## Do not
 
+- Claim working on a browser surface (extension, site, board, GitHub Pages) without a real browser click-through. Name the browser and URL. Chrome is allowed for a Chrome extension. Safari, Camoufox, Firefox, or another installed browser are also allowed. Headless Chrome dumps and Chrome CDP screenshots are not that click-through. GitHub depends: a source-only git push is not a browser surface.
 - Report fixed or done without the report section  
 - Check only the path just edited  
 - Claim verification that was not run  

@@ -29,6 +29,7 @@ Do not report fixed, done, shipped, or ready to try until:
 6. Completed work is pushed unless the user asked to hold it. If you do not push, the Git line must say why.  
 7. The report section below is filled in  
 
+When the change must be seen in a browser (extension, site, board, GitHub Pages): do not claim working without a real browser click-through. Name the browser and URL. Chrome is allowed for a Chrome extension. Safari, Camoufox, Firefox, or another installed browser are also allowed. Headless Chrome dumps and Chrome CDP screenshots are not that click-through. GitHub depends: a source-only git push is not a browser surface.
 Do not check only the path just edited. Do not invent verification.  
 Do not implement on a local that is behind origin after a fetch was possible.  
 Do not treat unchecked paths as probably fine; name them under residual risks.  

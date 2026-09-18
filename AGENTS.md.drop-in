@@ -23,6 +23,7 @@ Before reporting fixed, done, shipped, or ready to try:
 6. Push completed work unless the user asked to hold it. If you do not push, the Git line must say why.  
 7. End with the report section below.  
 
+When the change must be seen in a browser (extension, site, board, GitHub Pages): do not claim working without a real browser click-through. Name the browser and URL. Chrome is allowed for a Chrome extension. Safari, Camoufox, Firefox, or another installed browser are also allowed. Headless Chrome dumps and Chrome CDP screenshots are not that click-through. GitHub depends: a source-only git push is not a browser surface.
 Do not report success after checking only one path. Do not claim checks that were not run.  
 Do not implement on a local that is behind origin after a fetch was possible.  
 Do not treat unchecked paths as probably fine; name them under residual risks and do not claim full completion.  

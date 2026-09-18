@@ -39,6 +39,7 @@ For every code, config, UI, docs, or deploy change:
    (forgot-to-push default). If you do not push, say why on the Git line.
 7. Report only after the process is finished and the report is filled in.
 
+When the change must be seen in a browser (extension, site, board, GitHub Pages): do not claim working without a real browser click-through. Name the browser and URL. Chrome is allowed for a Chrome extension. Safari, Camoufox, Firefox, or another installed browser are also allowed. Headless Chrome dumps and Chrome CDP screenshots are not that click-through. GitHub depends: a source-only git push is not a browser surface.
 Do not say fixed, done, or try it until the process is finished.
 Do not claim verification you did not perform.
 Do not treat unchecked paths as probably fine; name them under residual risks.

@@ -75,7 +75,15 @@ surfaces, git.
 
 A named command is required for viewports. “I thought about mobile” is not a
 check. Martialsys boards: `python3 viewer/scripts/viewport_sanity.py` (also
-invoked from `vbd_gate` when HTML/CSS changed and that script exists).
+invoked from `vbd_gate` when HTML/CSS changed and that script exists). That
+script is CSS-pixel math. It is not a real browser click-through.
+
+When the change must be seen in a browser (extension, site, board, GitHub
+Pages): do not claim working without a real browser click-through. Name the
+browser and URL. Chrome is allowed for a Chrome extension. Safari, Camoufox,
+Firefox, or another installed browser are also allowed. Headless Chrome dumps
+are not that click-through. GitHub depends: a source-only git push is not a
+browser surface.
 
 The 2026-08 skip-to-graph defect was a map miss: desktop hash navigation worked;
 phone-width landing on a tall panel was never listed.
