@@ -1,0 +1,8 @@
+# Empty catalog shipped with the pack.
+# `upgrade-audit inventory --adopt` writes your own catalog to
+# ~/.config/upgrade-audit/repos.yaml (or $UPGRADE_AUDIT_CATALOG), never here.
+
+owner: ""
+clone_root: ~
+in_scope: []
+excluded: []
