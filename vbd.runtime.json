@@ -2,8 +2,22 @@
   "runtime_checks": [
     {
       "id": "pack-tests",
-      "argv": ["python3", "-m", "pytest", "tests", "-q"],
+      "argv": [
+        "python3",
+        "-m",
+        "pytest",
+        "tests",
+        "-q"
+      ],
       "timeout_s": 120
+    },
+    {
+      "id": "audit-sanity",
+      "argv": [
+        "sh",
+        "audit/scripts/sanity.sh"
+      ],
+      "timeout_s": 180
     }
   ]
 }
