@@ -162,6 +162,8 @@ Every completion report must include:
 | [SKILL.md](./SKILL.md) | Skill-format entry |
 | [AGENTS.md.drop-in](./AGENTS.md.drop-in) | Drop-in for `AGENTS.md` |
 | [.cursor-rules-example.mdc](./.cursor-rules-example.mdc) | Cursor rule example |
+| [editions/grok-bot/](./editions/grok-bot/) | Grok Bot edition: bot skill (with upgrade audit mode), shared-memory line, install notes |
+| [audit/](./audit/) | Upgrade Audit module: fleet logic audit after a model upgrade, verifier pass, PDF report |
 
 ### Claude
 
@@ -171,6 +173,21 @@ Skills: place `SKILL.md` under a `verify-before-done` skills directory.
 ### Cursor
 
 Project Rules with `alwaysApply: true`, or user rules with the short file.
+
+### Grok Bot / Cursor
+
+Grok Bot (Cursor's desktop bot app): use [editions/grok-bot](./editions/grok-bot/). Save its `SKILL.md` as a bot skill named `Verify before done` and add `MEMORY_LINE.txt` to shared memory as a standing instruction. Optional: clone this pack onto the box at `~/agent_laws_verify_before_done` so the bot can run `vbd_gate.py check --claim-done` from Shell.
+
+In bots this is instruction-level, not hook-enforced: there is no Stop hook or pre-push hook, so the gate runs only when the bot calls it. The Grok terminal install above (Stop hook plus pre-push) is unchanged.
+
+### Upgrade audit
+
+[audit/](./audit/) re-checks the shipped logic of every repo in your catalog when a new model generation ships. A second agent tries to refute each finding before it reaches the PDF. Default mode is `audit` (read-only); pushes and PRs need your explicit approval.
+
+- Grok terminal: run `audit/bin/upgrade-audit` and the walk from `audit/protocol/AUDIT.md`. `upgrade-audit send-grok` opens the walk in the Grok terminal on macOS.
+- Grok Bot / Cursor: the edition skill's "Upgrade audit mode" spawns auditor and verifier subagents and drives `upgrade-audit walk-step` from Shell with UTC snapshots and stall kill on.
+
+Tests: `sh audit/scripts/sanity.sh`.
 
 ### ChatGPT / Codex / similar
 
@@ -189,7 +206,7 @@ These rules were written after failures where continuous integration and a prima
 
 | | |
 |---|---|
-| License | [MIT](./LICENSE) |
+| License | [MIT](./LICENSE), including [audit/](./audit/LICENSE) |
 | Copyright | © 2026 Martial Systems LLC |
 | Notice | [NOTICE](./NOTICE) |
 

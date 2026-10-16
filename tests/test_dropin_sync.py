@@ -15,6 +15,7 @@ SURFACES = (
     "SKILL.md",
     "PASTE_BLOCK.txt",
     ".cursor-rules-example.mdc",
+    "editions/grok-bot/SKILL.md",
 )
 
 REQUIRED = (
@@ -58,6 +59,9 @@ class DropinSyncTest(unittest.TestCase):
             "SYSTEM.md",
             "write-from-data.md",
             "github_readme_video.py",
+            "editions/grok-bot/SKILL.md",
+            "editions/grok-bot/README.md",
+            "editions/grok-bot/MEMORY_LINE.txt",
         )
         offenders = []
         for name in dropins:

@@ -1,0 +1,11 @@
+{
+  "name": "verify-before-done",
+  "version": "1.0.0",
+  "description": "Verify Before Done: never claim done without checking the real result, plus Upgrade Audit, a read-only logic audit of your repos after a model upgrade with a verifier pass and PDF report.",
+  "license": "MIT",
+  "author": {
+    "name": "Martial Systems LLC",
+    "email": "martialsys@gmail.com"
+  },
+  "homepage": "https://github.com/martialsystems/verify-before-done"
+}
